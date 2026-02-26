@@ -1,0 +1,11 @@
+{
+  "name": "@aegis/circuits",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "build:wsl": "wsl -d Ubuntu -- bash -lc \"cd /mnt/c/Projects/Aegis/packages/circuits && bash scripts/build.sh\"",
+    "test": "nargo test",
+    "clean": "rm -rf target proofs"
+  }
+}
