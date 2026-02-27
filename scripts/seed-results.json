@@ -1,0 +1,54 @@
+{
+  "registry": "0x851CfbB116aBdd50Ab899c35680eBd8273dD6Bba",
+  "auditorCommitment": "0x1b90cf3b44d7b16293e1aca7f37148ec665c1592d33682571b3af18d62d6abb7",
+  "skills": [
+    {
+      "name": "Flow Protocol Skill",
+      "skillHash": "0x183c93880fbc25f2a600bc24b5956f5ca90c9b51671c8c5c49081b6fcedf53ce",
+      "level": 2,
+      "tx": "0x1964e3d0776d57ebde1654e8e782fbf1fef3c555e12896a54985e5d2c8e59ac2"
+    },
+    {
+      "name": "SerpAPI Web Search",
+      "skillHash": "0x22cf12a7303eee61d0a3e0e9432d7f4e118ed3ffe8313df07505f696b6fd5aaf",
+      "level": 1,
+      "tx": "0xb0df058956bf1786a4addb8817f5c313a02ce3c522415dac474d36984f87f58d"
+    },
+    {
+      "name": "Code Interpreter",
+      "skillHash": "0x2d9c465d634e55e61ed920d972e074a32819969245345800dd5b2541aca92c72",
+      "level": 2,
+      "tx": "0xc6dcb8cf3503e7f681d3896c4661502cf336f3ac6393506d9f47b945daf3187d"
+    },
+    {
+      "name": "Filesystem MCP Server",
+      "skillHash": "0x2a62ee1cf0fea22d27ad47d6c2bbbc0fcba62ad2ae5ffc7ca3ff9d164035856f",
+      "level": 1,
+      "tx": "0xd75a77ec9c5b83b7902bc3980183bebe8269056ae8e2873e5fb6f003d4fee4de"
+    },
+    {
+      "name": "GitHub MCP Server",
+      "skillHash": "0x0c41b2ee370331eb6635d7e9bebaea6adf77a10fce227a1a14c9de2b8b558ef4",
+      "level": 2,
+      "tx": "0x75556ec28ed8a44310cabde97a2ea3d59c51f5feaf99a5c0ffce09eaae0dc66d"
+    },
+    {
+      "name": "Playwright Browser Automation",
+      "skillHash": "0x27714155da8e17a20496cac03840018f2872e53599336b7b8fc1b4f1090451db",
+      "level": 1,
+      "tx": "0x240611d5b766d4f87353019d59e193d047d361c9a5595e13edc739d585d50d4c"
+    },
+    {
+      "name": "RAG Document Search",
+      "skillHash": "0x09c9e5349b7923cfac161feb7bf64603328f7e2550761730c569f93d740a1f57",
+      "level": 2,
+      "tx": "0xf05878ca008716517e72d7d0ffc2f73fc4f2eedc6c0b548da5b7bfcbe99a14b2"
+    },
+    {
+      "name": "SQL Database Toolkit",
+      "skillHash": "0x277ff342e8f9a870f7e071806a5b7c7be6dd9a87a46dba4cdb9e78df564653d4",
+      "level": 3,
+      "tx": "0xcca87e7892b25b74b10ee184f0b981ba476c8901be0afa1ce51f53b7e66fa8ab"
+    }
+  ]
+}
