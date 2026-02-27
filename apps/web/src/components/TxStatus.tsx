@@ -1,3 +1,5 @@
+import { useAccount } from 'wagmi';
+
 interface TxStatusProps {
   hash?: string;
   isPending: boolean;
@@ -6,7 +8,32 @@ interface TxStatusProps {
   error?: Error | null;
 }
 
+const EXPLORER: Record<number, string> = {
+  84532: 'https://sepolia.basescan.org',
+  8453: 'https://basescan.org',
+};
+
 export function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: TxStatusProps) {
+  const { chain } = useAccount();
+  const explorerUrl = chain?.id ? EXPLORER[chain.id] : undefined;
+
+  function TxLink({ txHash }: { txHash: string }) {
+    if (explorerUrl) {
+      return (
+        <a
+          href={`${explorerUrl}/tx/${txHash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="tx-hash mt-1"
+          style={{ display: 'block', textDecoration: 'none' }}
+        >
+          {txHash.slice(0, 10)}...{txHash.slice(-8)} ↗
+        </a>
+      );
+    }
+    return <div className="tx-hash mt-1">{txHash}</div>;
+  }
+
   if (error) {
     return (
       <div className="alert alert-error">
@@ -31,7 +58,7 @@ export function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: Tx
     return (
       <div className="alert alert-info">
         <span className="spinner" /> Transaction submitted. Waiting for confirmation...
-        <div className="tx-hash mt-1">{hash}</div>
+        <TxLink txHash={hash} />
       </div>
     );
   }
@@ -40,7 +67,7 @@ export function TxStatus({ hash, isPending, isConfirming, isSuccess, error }: Tx
     return (
       <div className="alert alert-success">
         Transaction confirmed!
-        <div className="tx-hash mt-1">{hash}</div>
+        <TxLink txHash={hash} />
       </div>
     );
   }

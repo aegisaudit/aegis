@@ -93,4 +93,41 @@ export const registryAbi = [
       { name: 'stake', type: 'uint256', indexed: false },
     ],
   },
+  {
+    type: 'function',
+    name: 'openDispute',
+    inputs: [
+      { name: 'skillHash', type: 'bytes32' },
+      { name: 'attestationIndex', type: 'uint256' },
+      { name: 'evidence', type: 'bytes' },
+    ],
+    outputs: [],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    name: 'resolveDispute',
+    inputs: [
+      { name: 'disputeId', type: 'uint256' },
+      { name: 'auditorFault', type: 'bool' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'event',
+    name: 'DisputeOpened',
+    inputs: [
+      { name: 'disputeId', type: 'uint256', indexed: true },
+      { name: 'skillHash', type: 'bytes32', indexed: true },
+    ],
+  },
+  {
+    type: 'event',
+    name: 'DisputeResolved',
+    inputs: [
+      { name: 'disputeId', type: 'uint256', indexed: true },
+      { name: 'auditorSlashed', type: 'bool', indexed: false },
+    ],
+  },
 ] as const;
