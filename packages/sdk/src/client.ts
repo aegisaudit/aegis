@@ -1,6 +1,7 @@
 import type { PublicClient, WalletClient, Transport, Chain, Account } from 'viem';
 import type {
   AegisConfig,
+  Address,
   Attestation,
   AuditorReputation,
   Hex,
@@ -15,6 +16,7 @@ import {
   registerSkill as _registerSkill,
   openDispute as _openDispute,
 } from './registry';
+import { REGISTRY_ADDRESSES } from './constants';
 
 /**
  * High-level client for interacting with the AEGIS protocol.
@@ -36,13 +38,20 @@ import {
  * ```
  */
 export class AegisClient {
-  private readonly config: AegisConfig;
+  private readonly config: AegisConfig & { registryAddress: Address };
   private readonly publicClient: PublicClient;
   private walletClient?: WalletClient<Transport, Chain, Account>;
 
   constructor(config: AegisConfig) {
-    this.config = config;
-    this.publicClient = createReadClient(config);
+    const registryAddress =
+      config.registryAddress ?? REGISTRY_ADDRESSES[config.chainId];
+    if (!registryAddress) {
+      throw new Error(
+        `No registry address for chain ${config.chainId}. Pass registryAddress explicitly.`,
+      );
+    }
+    this.config = { ...config, registryAddress };
+    this.publicClient = createReadClient(this.config);
   }
 
   /** Attach a wallet client for write operations */

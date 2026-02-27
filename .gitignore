@@ -36,6 +36,9 @@ nul
 # Vercel
 .vercel/
 
+# npm auth (tokens)
+packages/sdk/.npmrc
+
 # Logs
 *.log
 npm-debug.log*

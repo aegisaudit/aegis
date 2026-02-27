@@ -1,0 +1,5 @@
+[package]
+name = "hash_helper"
+type = "bin"
+
+[dependencies]

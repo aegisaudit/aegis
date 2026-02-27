@@ -16,9 +16,9 @@ export const CHAIN_CONFIG = {
  * Updated after each deployment.
  */
 export const REGISTRY_ADDRESSES: Record<number, Address> = {
-  // Base Sepolia — update after deployment
-  // 84532: '0x...',
-  // Base Mainnet — update after deployment
+  // Base Sepolia
+  84532: '0x851CfbB116aBdd50Ab899c35680eBd8273dD6Bba',
+  // Base Mainnet — update after mainnet deployment
   // 8453: '0x...',
 };
 

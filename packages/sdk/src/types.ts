@@ -30,8 +30,8 @@ export interface DisputeInfo {
 export interface AegisConfig {
   /** Target chain ID (8453 for Base, 84532 for Base Sepolia) */
   chainId: number;
-  /** AegisRegistry contract address */
-  registryAddress: Address;
+  /** AegisRegistry contract address (optional — auto-resolved from built-in addresses for supported chains) */
+  registryAddress?: Address;
   /** RPC URL (optional — defaults to public RPC for the chain) */
   rpcUrl?: string;
 }

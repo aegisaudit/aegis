@@ -1,6 +1,7 @@
 {
-  "name": "@aegis/sdk",
-  "version": "0.0.1",
+  "name": "@aegisaudit/sdk",
+  "version": "0.1.1",
+  "description": "TypeScript SDK for the AEGIS Protocol — query and interact with on-chain ZK skill attestations on Base",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -12,11 +13,36 @@
       "require": "./dist/index.cjs"
     }
   },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "aegis",
+    "zk",
+    "attestation",
+    "ai-agent",
+    "skill",
+    "base",
+    "blockchain",
+    "zero-knowledge"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aegisaudit/aegis.git",
+    "directory": "packages/sdk"
+  },
   "scripts": {
     "build": "tsup",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@aztec/bb.js": "3.0.0-nightly.20260102",
