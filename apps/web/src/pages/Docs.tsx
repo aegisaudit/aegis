@@ -195,6 +195,10 @@ const SECTIONS: SidenavSection[] = [
   { id: "contract-events", label: "Events", indent: true },
   { id: "contract-errors", label: "Errors", indent: true },
   { id: "zk-circuit", label: "ZK Circuit" },
+  { id: "sdk-agents", label: "SDK for Agents" },
+  { id: "sdk-discovery", label: "Discovery", indent: true },
+  { id: "sdk-verification", label: "Verification", indent: true },
+  { id: "sdk-write-ops", label: "Write Operations", indent: true },
   { id: "cli-ref", label: "CLI Reference" },
   { id: "deployment", label: "Deployment" },
 ];
@@ -482,31 +486,54 @@ export function Docs({ onBack, onRegistry, onDevelopers, onAuditors, onDocs }: {
 
           {/* SDK */}
           <section id="arch-sdk" ref={setRef("arch-sdk")} style={{ marginTop: 32 }}>
-            <SubHeading>SDK</SubHeading>
+            <SubHeading>SDK <span style={{ fontFamily: FONT, fontSize: 11, color: ACCENT, fontWeight: 700 }}>v0.2.0</span></SubHeading>
             <Para>
-              The TypeScript SDK (<InlineCode>@aegis/sdk</InlineCode>) provides a high-level client for interacting with the registry. It wraps viem for chain interactions and includes a prover module for generating ZK proofs via the nargo/bb CLI tools.
+              The TypeScript SDK (<InlineCode>@aegisaudit/sdk</InlineCode>) provides a high-level client for interacting with the registry. It wraps viem for chain interactions, includes a prover module for ZK proofs, and supports full discovery and event queries. Install via <InlineCode>npm install @aegisaudit/sdk</InlineCode>.
             </Para>
             <InfoTable
               headers={["Module", "Exports", "Description"]}
               rows={[
-                ["client.ts", "AegisClient", "High-level client with verify, getAttestations, registerSkill, etc."],
+                ["client.ts", "AegisClient", "High-level client: verify, discover, register, dispute, stake"],
                 ["prover.ts", "generateAttestationViaCLI, loadProofFromFiles", "ZK proof generation via nargo + bb CLI"],
-                ["registry.ts", "Low-level wrappers", "Direct viem contract read/write calls"],
-                ["types.ts", "Attestation, AegisConfig, etc.", "TypeScript interfaces for all protocol types"],
-                ["constants.ts", "CHAIN_CONFIG, fees", "Chain IDs, RPC URLs, fee amounts"],
+                ["registry.ts", "Low-level wrappers", "Direct viem contract read/write calls + event queries"],
+                ["types.ts", "Attestation, AegisConfig, Event types", "TypeScript interfaces for all protocol types"],
+                ["constants.ts", "CHAIN_CONFIG, REGISTRY_ADDRESSES", "Chain IDs, addresses, fee amounts, deployment blocks"],
                 ["ipfs.ts", "fetchMetadata, uploadMetadata", "IPFS metadata storage helpers"],
               ]}
             />
+
+            <Callout color={GREEN} label="Agent Capabilities (v0.2.0)">
+              The SDK provides full feature parity with the web app. AI agents can: discover all registered skills and auditors via event scanning, fetch metadata URIs, verify attestation proofs, manage auditor stake, open and resolve disputes — all programmatically via <InlineCode>npm install @aegisaudit/sdk</InlineCode>.
+            </Callout>
+
+            <CodeBlock code={`import { AegisClient } from '@aegisaudit/sdk';
+
+// Registry address auto-resolved for known chains
+const client = new AegisClient({ chainId: 84532 });
+
+// Discovery — scan on-chain events
+const skills = await client.listAllSkills();
+const auditors = await client.listAllAuditors();
+const uri = await client.getMetadataURI(skills[0].skillHash);
+
+// Verification
+const isValid = await client.verify(skills[0].skillHash, 0);
+
+// Reputation
+const rep = await client.getAuditorReputation(auditors[0].auditorCommitment);
+
+// Disputes
+const disputes = await client.listDisputes({ skillHash: skills[0].skillHash });`} filename="agent.ts" lang="typescript" />
           </section>
 
           {/* CLI */}
           <section id="arch-cli" ref={setRef("arch-cli")} style={{ marginTop: 32 }}>
             <SubHeading>CLI</SubHeading>
             <Para>
-              The CLI (<InlineCode>@aegis/cli</InlineCode>) provides 5 commands for interacting with the protocol from the terminal. Built with Commander.js, chalk, and ora.
+              The CLI (<InlineCode>@aegisaudit/cli</InlineCode>) provides 5 commands for interacting with the protocol from the terminal. Built with Commander.js, chalk, and ora.
             </Para>
-            <CodeBlock code={`# Install globally
-npm install -g @aegis/cli
+            <CodeBlock code={`# Install globally (coming soon)
+npm install -g @aegisaudit/cli
 
 # Available commands
 aegis register-auditor   # Register as an anonymous auditor
@@ -766,11 +793,102 @@ fn main(
             </div>
           </section>
 
+          {/* ═══ SDK for Agents ═══ */}
+          <section id="sdk-agents" ref={setRef("sdk-agents")} style={{ marginTop: 56 }}>
+            <SectionHeading>SDK for Agents</SectionHeading>
+            <Para>
+              The <InlineCode>@aegisaudit/sdk</InlineCode> package (v0.2.0) gives AI agents full programmatic access to the AEGIS registry — the same capabilities available in the web app. Agents can discover skills, verify proofs, manage stake, and handle disputes without any web interface.
+            </Para>
+
+            <CodeBlock code={`npm install @aegisaudit/sdk`} filename="terminal" lang="bash" />
+
+            <Callout color={GREEN} label="Auto-Resolved Configuration">
+              Registry addresses are built into the SDK for known chains (Base Sepolia, Base Mainnet). Just pass <InlineCode>chainId</InlineCode> — no need to look up contract addresses.
+            </Callout>
+          </section>
+
+          <section id="sdk-discovery" ref={setRef("sdk-discovery")} style={{ marginTop: 32 }}>
+            <SubHeading>Discovery</SubHeading>
+            <Para>
+              Read-only methods that scan on-chain events to discover registered skills and auditors. Event queries use chunked log fetching (9,999 blocks per request) to work within public RPC limits.
+            </Para>
+            <InfoTable
+              headers={["Method", "Returns", "Description"]}
+              rows={[
+                ["listAllSkills(options?)", "SkillRegisteredEvent[]", "All registered skills with audit levels and auditor info"],
+                ["listAllAuditors(options?)", "AuditorRegisteredEvent[]", "All registered auditors with initial stake amounts"],
+                ["getMetadataURI(skillHash)", "string", "IPFS/HTTP metadata URI for a skill"],
+                ["listDisputes(options?)", "DisputeOpenedEvent[]", "All opened disputes, optionally filtered by skill"],
+                ["listResolvedDisputes(options?)", "DisputeResolvedEvent[]", "All resolved disputes with slash results"],
+              ]}
+            />
+            <CodeBlock code={`import { AegisClient } from '@aegisaudit/sdk';
+
+const client = new AegisClient({ chainId: 84532 });
+
+// Browse all registered skills
+const skills = await client.listAllSkills();
+for (const s of skills) {
+  const uri = await client.getMetadataURI(s.skillHash);
+  console.log(s.skillHash, 'level:', s.auditLevel, 'meta:', uri);
+}
+
+// Browse all auditors
+const auditors = await client.listAllAuditors();
+for (const a of auditors) {
+  const rep = await client.getAuditorReputation(a.auditorCommitment);
+  console.log(a.auditorCommitment, 'score:', rep.score, 'audits:', rep.attestationCount);
+}`} filename="discover.ts" lang="typescript" />
+          </section>
+
+          <section id="sdk-verification" ref={setRef("sdk-verification")} style={{ marginTop: 32 }}>
+            <SubHeading>Verification</SubHeading>
+            <Para>
+              Core read-only methods for verifying skill attestations and querying auditor reputation. These call the on-chain verifier contract directly.
+            </Para>
+            <InfoTable
+              headers={["Method", "Returns", "Description"]}
+              rows={[
+                ["verify(skillHash, index)", "boolean", "Re-verify an attestation's ZK proof on-chain"],
+                ["getAttestations(skillHash)", "Attestation[]", "All attestations for a skill hash"],
+                ["getAuditorReputation(commitment)", "AuditorReputation", "Score, total stake, attestation count"],
+              ]}
+            />
+            <CodeBlock code={`// Before loading any skill, agents should verify:
+const attestations = await client.getAttestations(skillHash);
+const isValid = await client.verify(skillHash, 0);
+const rep = await client.getAuditorReputation(
+  attestations[0].auditorCommitment
+);
+
+// Trust decision based on proof + reputation
+if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
+  console.log('Safe to load skill');
+}`} filename="verify.ts" lang="typescript" />
+          </section>
+
+          <section id="sdk-write-ops" ref={setRef("sdk-write-ops")} style={{ marginTop: 32 }}>
+            <SubHeading>Write Operations</SubHeading>
+            <Para>
+              Methods that modify on-chain state. Require a wallet client via <InlineCode>client.setWallet()</InlineCode>.
+            </Para>
+            <InfoTable
+              headers={["Method", "ETH Required", "Description"]}
+              rows={[
+                ["registerSkill(params)", "0.001 ETH", "Submit a skill attestation with ZK proof"],
+                ["registerAuditor(commitment, stake)", "0.01+ ETH", "Register as anonymous auditor"],
+                ["addStake(commitment, amount)", "any", "Add stake to existing auditor registration"],
+                ["openDispute(skillHash, index, evidence, bond)", "0.005+ ETH", "Challenge a fraudulent attestation"],
+                ["resolveDispute(disputeId, auditorFault)", "0", "Resolve dispute (owner only)"],
+              ]}
+            />
+          </section>
+
           {/* ═══ CLI Reference ═══ */}
           <section id="cli-ref" ref={setRef("cli-ref")} style={{ marginTop: 56 }}>
             <SectionHeading>CLI Reference</SectionHeading>
             <Para>
-              The AEGIS CLI (<InlineCode>@aegis/cli</InlineCode>) wraps the SDK into 5 terminal commands. All commands support <InlineCode>--network</InlineCode> (base-sepolia | base), <InlineCode>--rpc</InlineCode>, and <InlineCode>--registry</InlineCode> flags.
+              The AEGIS CLI (<InlineCode>@aegisaudit/cli</InlineCode>) wraps the SDK into 5 terminal commands. All commands support <InlineCode>--network</InlineCode> (base-sepolia | base), <InlineCode>--rpc</InlineCode>, and <InlineCode>--registry</InlineCode> flags.
             </Para>
 
             {[
@@ -875,6 +993,15 @@ fn main(
               ]}
             />
 
+            <SubHeading>Current Deployment (Base Sepolia)</SubHeading>
+            <InfoTable
+              headers={["Contract", "Address"]}
+              rows={[
+                ["UltraHonkVerifier", "0x6c58dE61157AA10E62174c37DFBe63094e334cE6"],
+                ["AegisRegistry", "0x851CfbB116aBdd50Ab899c35680eBd8273dD6Bba"],
+              ]}
+            />
+
             <SubHeading>Deploy Steps</SubHeading>
             <CodeBlock code={`# 1. Build contracts
 cd packages/contracts
@@ -889,8 +1016,8 @@ aegis deploy -n base-sepolia \\
 aegis status --skill 0x0000...0000 -n base-sepolia
 
 # Output:
-# ✓ UltraHonkVerifier deployed at 0x...
-# ✓ AegisRegistry deployed at 0x...
+# ✓ UltraHonkVerifier deployed at 0x6c58...
+# ✓ AegisRegistry deployed at 0x851C...
 # ✓ Contracts verified on Basescan`} filename="terminal" lang="bash" />
 
             <SubHeading>Environment Variables</SubHeading>

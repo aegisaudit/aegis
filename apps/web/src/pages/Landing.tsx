@@ -146,15 +146,143 @@ function NavBar({ onEnterApp, onExploreRegistry, onDevelopers, onAuditors, onDoc
   );
 }
 
+function QuickStartWindow() {
+  const [copied, setCopied] = useState<number | null>(null);
+  const handleCopy = (text: string, idx: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(idx);
+      setTimeout(() => setCopied(null), 2000);
+    });
+  };
+  const lines: { prefix: string; cmd: string; comment: string | null }[] = [
+    { prefix: "$", cmd: "npm install @aegisaudit/sdk", comment: null },
+    { prefix: "", cmd: "", comment: "# Query the registry from any agent" },
+    { prefix: ">", cmd: 'import { AegisClient } from "@aegisaudit/sdk";', comment: null },
+    { prefix: ">", cmd: "const aegis = new AegisClient({ chainId: 84532 });", comment: null },
+    { prefix: "", cmd: "", comment: "" },
+    { prefix: "", cmd: "", comment: "# Discover all attested skills" },
+    { prefix: ">", cmd: "const skills = await aegis.listAllSkills();", comment: null },
+    { prefix: "", cmd: '// → [{ skillHash: "0x183c...", auditLevel: 2, ... }, ...]', comment: null },
+    { prefix: "", cmd: "", comment: "" },
+    { prefix: "", cmd: "", comment: "# Check if a skill is safe before running it" },
+    { prefix: ">", cmd: "const atts = await aegis.getAttestations(skillHash);", comment: null },
+    { prefix: ">", cmd: "const safe = atts.length > 0 && atts[0].auditLevel >= 2;", comment: null },
+  ];
+  return (
+    <div style={{
+      maxWidth: 680, width: "100%", margin: "0 auto",
+      animation: "fadeInUp 0.8s ease 0.6s both",
+    }}>
+      <div style={{
+        background: "#0D0D10", border: `1px solid ${BORDER}`,
+        borderRadius: 12, overflow: "hidden",
+        boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5), 0 0 60px rgba(255,51,102,0.04)",
+      }}>
+        {/* macOS title bar */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "12px 16px", borderBottom: `1px solid ${BORDER}`,
+          background: "rgba(19,19,22,0.95)",
+        }}>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FF5F57" }} />
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FEBC2E" }} />
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28C840" }} />
+          </div>
+          <span style={{ fontFamily: FONT_BODY, fontSize: 12, color: TEXT_DIM }}>
+            quickstart &mdash; zsh
+          </span>
+          <div style={{ width: 52 }} />
+        </div>
+        {/* Terminal content */}
+        <div style={{ padding: "16px 20px", fontFamily: FONT_BODY, fontSize: 13, lineHeight: 1.65 }}>
+          {lines.map((line, i) => {
+            if (line.comment !== null) {
+              return (
+                <div key={i} style={{ color: "#4B5563", minHeight: line.comment === "" ? "0.8em" : "1.5em" }}>
+                  {line.comment}
+                </div>
+              );
+            }
+            const isInstall = line.prefix === "$";
+            return (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", gap: 0, minHeight: "1.5em",
+                position: "relative",
+              }}
+                onMouseEnter={e => {
+                  const btn = e.currentTarget.querySelector("[data-copy]") as HTMLElement;
+                  if (btn) btn.style.opacity = "1";
+                }}
+                onMouseLeave={e => {
+                  const btn = e.currentTarget.querySelector("[data-copy]") as HTMLElement;
+                  if (btn) btn.style.opacity = "0";
+                }}
+              >
+                <span style={{ color: isInstall ? ACCENT : "#6B7280", marginRight: 8, userSelect: "none" }}>
+                  {line.prefix}
+                </span>
+                {isInstall ? (
+                  <span>
+                    <span style={{ color: "#A1A1AA" }}>npm install </span>
+                    <span style={{ color: "#4ADE80", fontWeight: 700 }}>@aegisaudit/sdk</span>
+                  </span>
+                ) : (
+                  <span style={{ color: "#A1A1AA" }}>
+                    {line.cmd.startsWith("//") ? (
+                      <span style={{ color: "#4B5563" }}>{line.cmd}</span>
+                    ) : (
+                      <>
+                        {line.cmd.split(/(\b(?:import|from|const|await|new)\b|[{}])/g).map((part, j) =>
+                          ["import", "from", "const", "await", "new"].includes(part) ? (
+                            <span key={j} style={{ color: "#C084FC" }}>{part}</span>
+                          ) : ["{", "}"].includes(part) ? (
+                            <span key={j} style={{ color: "#FBBF24" }}>{part}</span>
+                          ) : part.includes('"') || part.includes("'") ? (
+                            <span key={j} style={{ color: "#4ADE80" }}>{part}</span>
+                          ) : (
+                            <span key={j}>{part}</span>
+                          )
+                        )}
+                      </>
+                    )}
+                  </span>
+                )}
+                {isInstall && (
+                  <button
+                    data-copy=""
+                    onClick={() => handleCopy(line.cmd, i)}
+                    style={{
+                      position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)",
+                      background: copied === i ? "rgba(74,222,128,0.15)" : "rgba(42,42,48,0.9)",
+                      border: `1px solid ${copied === i ? "rgba(74,222,128,0.3)" : BORDER}`,
+                      borderRadius: 4, padding: "2px 8px",
+                      fontSize: 10, fontFamily: FONT_BODY,
+                      color: copied === i ? "#4ADE80" : TEXT_DIM,
+                      cursor: "pointer", opacity: 0, transition: "opacity 0.15s",
+                    }}
+                  >
+                    {copied === i ? "\u2713" : "copy"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onExploreRegistry?: () => void }) {
   return (
     <section style={{
       minHeight: "100vh", display: "flex", flexDirection: "column",
       alignItems: "center", justifyContent: "center", textAlign: "center",
-      position: "relative", padding: "120px 24px 80px",
+      position: "relative", padding: "100px 24px 60px",
     }}>
       <div style={{
-        position: "absolute", top: "20%", left: "50%", transform: "translate(-50%, -50%)",
+        position: "absolute", top: "15%", left: "50%", transform: "translate(-50%, -50%)",
         width: 800, height: 800,
         background: `radial-gradient(circle, rgba(255,51,102,0.06) 0%, transparent 70%)`,
         pointerEvents: "none",
@@ -162,7 +290,7 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
       <div style={{
         display: "inline-flex", alignItems: "center", gap: 8,
         padding: "6px 16px", borderRadius: 20, border: `1px solid ${BORDER}`,
-        marginBottom: 32, background: "rgba(255,51,102,0.04)",
+        marginBottom: 28, background: "rgba(255,51,102,0.04)",
         animation: "fadeInUp 0.8s ease forwards",
       }}>
         <div style={{ width: 6, height: 6, borderRadius: "50%", background: ACCENT, animation: "pulse 2s infinite" }} />
@@ -173,7 +301,7 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
       <h1 style={{
         fontFamily: FONT_HEAD, fontSize: "clamp(36px, 5vw, 64px)",
         fontWeight: 800, color: TEXT, lineHeight: 1.1, maxWidth: 800,
-        letterSpacing: "-0.02em", margin: "0 0 24px",
+        letterSpacing: "-0.02em", margin: "0 0 20px",
         animation: "fadeInUp 0.8s ease 0.1s both",
       }}>
         Trust every skill{" "}
@@ -186,7 +314,7 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
       </h1>
       <p style={{
         fontFamily: FONT_BODY, fontSize: 15, color: TEXT_DIM,
-        maxWidth: 540, lineHeight: 1.7, margin: "0 0 40px",
+        maxWidth: 540, lineHeight: 1.7, margin: "0 0 32px",
         animation: "fadeInUp 0.8s ease 0.2s both",
       }}>
         The on-chain attestation registry for AI agent skills. Cryptographically verified.
@@ -208,7 +336,8 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
         >Read Docs &rarr;</button>
       </div>
       <div style={{
-        display: "flex", gap: 20, alignItems: "center", marginTop: 80,
+        display: "flex", gap: 20, alignItems: "center", marginTop: 48,
+        marginBottom: 48,
         animation: "fadeInUp 0.8s ease 0.5s both",
       }}>
         <Diamond size={12} color={ACCENT} delay={0} />
@@ -217,6 +346,7 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
         <Diamond size={18} color={ACCENT2} delay={1.5} />
         <Diamond size={12} color={ACCENT} delay={2} />
       </div>
+      <QuickStartWindow />
     </section>
   );
 }
@@ -598,16 +728,17 @@ function HowItWorks() {
 
 function CodeBlock() {
   const code = [
-    "// Initialize the AEGIS verification client",
-    "const client = new VerifyClient({ network: 'base' });",
+    "import { AegisClient } from '@aegisaudit/sdk';",
     "",
-    "// Check attestation before loading any skill",
-    "const result = await client.verify(skillHash);",
+    "const aegis = new AegisClient({ chainId: 84532 });",
     "",
-    "if (result.level >= 2 && result.stakeAmount > 1000) {",
-    "  // Skill passed Level 2 audit with bonded stake",
-    "  agent.loadSkill(skillHash);",
-    "  console.log('Verified:', result.auditor);",
+    "// Discover all attested skills on the registry",
+    "const skills = await aegis.listAllSkills();",
+    "",
+    "// Verify a skill before your agent runs it",
+    "const atts = await aegis.getAttestations(skillHash);",
+    "if (atts[0]?.auditLevel >= 2) {",
+    "  agent.loadSkill(skillHash); // safe to run",
     "}",
   ].join("\n");
   return (
@@ -628,13 +759,13 @@ function CodeBlock() {
           <h2 style={{
             fontFamily: FONT_HEAD, fontSize: 34,
             fontWeight: 800, color: TEXT, letterSpacing: "-0.02em", margin: "0 0 16px",
-          }}>Verify in three lines</h2>
+          }}>npm install, verify, done</h2>
           <p style={{
             fontFamily: FONT_BODY, fontSize: 14,
             color: TEXT_DIM, lineHeight: 1.7, margin: 0,
           }}>
-            Drop-in SDK for TypeScript and Python. Check attestation level, auditor reputation,
-            and bonded stake before your agent loads any skill. One function call. On-chain verification.
+            Drop-in TypeScript SDK. Discover skills, check attestation level, verify ZK proofs,
+            and query auditor reputation &mdash; all from a single client. Available now on npm as <span style={{ color: "#4ADE80" }}>@aegisaudit/sdk</span>.
           </p>
         </div>
         <div style={{
@@ -648,7 +779,7 @@ function CodeBlock() {
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57" }} />
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FEBC2E" }} />
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF3366" }} />
-            <span style={{ marginLeft: 10, fontFamily: FONT_BODY, fontSize: 11, color: TEXT_DIM }}>verify.ts</span>
+            <span style={{ marginLeft: 10, fontFamily: FONT_BODY, fontSize: 11, color: TEXT_DIM }}>agent.ts</span>
           </div>
           <pre style={{
             padding: "20px 20px", margin: 0, overflow: "auto",

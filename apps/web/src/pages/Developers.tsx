@@ -459,31 +459,26 @@ const METHODS: MethodDef[] = [
       { name: "skillHash", type: "Hex (bytes32)", required: true, description: "keccak256 hash of the skill package" },
       { name: "attestationIndex", type: "number", required: true, description: "Index of the attestation to verify" },
     ],
-    tsExample: `import { AegisClient } from '@aegis/sdk';
+    tsExample: `import { AegisClient } from '@aegisaudit/sdk';
 
-const client = new AegisClient({
-  chainId: 84532,
-  registryAddress: '0x...',
-});
+// Registry address auto-resolved for Base Sepolia
+const client = new AegisClient({ chainId: 84532 });
 
-const skillHash = '0x4cd3b629822958a4...';
+const skillHash = '0x183c9388...';
 const isValid = await client.verify(skillHash, 0);
 
 if (isValid) {
-  console.log('Skill attestation is cryptographically valid');
+  console.log('ZK proof verified on-chain');
 }`,
     pyExample: `from aegis_sdk import AegisClient
 
-client = AegisClient(
-    chain_id=84532,
-    registry_address="0x...",
-)
+client = AegisClient(chain_id=84532)
 
-skill_hash = "0x4cd3b629822958a4..."
+skill_hash = "0x183c9388..."
 is_valid = await client.verify(skill_hash, 0)
 
 if is_valid:
-    print("Skill attestation is cryptographically valid")`,
+    print("ZK proof verified on-chain")`,
   },
   {
     name: "getAttestations",
@@ -534,6 +529,95 @@ print(f"Score: {rep.score}")
 print(f"Staked: {rep.total_stake}")
 print(f"Audits: {rep.attestation_count}")`,
   },
+  // ── Discovery (v0.2.0) ──
+  {
+    name: "listAllSkills",
+    signature: "(options?) → Promise<SkillRegisteredEvent[]>",
+    description: "Discover all registered skills by scanning on-chain events. Returns skill hashes with audit levels and auditor info.",
+    group: "Discovery",
+    returnType: "Promise<SkillRegisteredEvent[]>",
+    params: [
+      { name: "options.fromBlock", type: "bigint", required: false, description: "Start block (defaults to deployment block)" },
+      { name: "options.toBlock", type: "bigint", required: false, description: "End block (defaults to latest)" },
+    ],
+    tsExample: `const skills = await client.listAllSkills();
+
+for (const s of skills) {
+  console.log('Hash:', s.skillHash);
+  console.log('Level:', s.auditLevel);
+  console.log('Auditor:', s.auditorCommitment);
+  console.log('Block:', s.blockNumber);
+}`,
+    pyExample: `skills = await client.list_all_skills()
+
+for s in skills:
+    print(f"Hash: {s.skill_hash}")
+    print(f"Level: {s.audit_level}")
+    print(f"Auditor: {s.auditor_commitment}")`,
+  },
+  {
+    name: "listAllAuditors",
+    signature: "(options?) → Promise<AuditorRegisteredEvent[]>",
+    description: "Browse all registered auditors by scanning on-chain events. Returns commitments and initial stake amounts.",
+    group: "Discovery",
+    returnType: "Promise<AuditorRegisteredEvent[]>",
+    params: [
+      { name: "options.fromBlock", type: "bigint", required: false, description: "Start block (defaults to deployment block)" },
+      { name: "options.toBlock", type: "bigint", required: false, description: "End block (defaults to latest)" },
+    ],
+    tsExample: `const auditors = await client.listAllAuditors();
+
+for (const a of auditors) {
+  console.log('Commitment:', a.auditorCommitment);
+  console.log('Stake:', a.stake, 'wei');
+}`,
+    pyExample: `auditors = await client.list_all_auditors()
+
+for a in auditors:
+    print(f"Commitment: {a.auditor_commitment}")
+    print(f"Stake: {a.stake} wei")`,
+  },
+  {
+    name: "getMetadataURI",
+    signature: "(skillHash) → Promise<string>",
+    description: "Get the metadata URI for a registered skill. Returns the IPFS or HTTP link to skill metadata JSON.",
+    group: "Discovery",
+    returnType: "Promise<string>",
+    params: [
+      { name: "skillHash", type: "Hex (bytes32)", required: true, description: "Hash of the registered skill" },
+    ],
+    tsExample: `const uri = await client.getMetadataURI(skillHash);
+console.log(uri);
+// → {"name": "Flow Protocol Skill", "description": "...", "category": "DeFi"}`,
+    pyExample: `uri = await client.get_metadata_uri(skill_hash)
+print(uri)
+# → {"name": "Flow Protocol Skill", ...}`,
+  },
+  {
+    name: "listDisputes",
+    signature: "(options?) → Promise<DisputeOpenedEvent[]>",
+    description: "List all opened disputes. Optionally filter by skill hash.",
+    group: "Discovery",
+    returnType: "Promise<DisputeOpenedEvent[]>",
+    params: [
+      { name: "options.skillHash", type: "Hex", required: false, description: "Filter disputes for a specific skill" },
+      { name: "options.fromBlock", type: "bigint", required: false, description: "Start block" },
+    ],
+    tsExample: `// All disputes
+const disputes = await client.listDisputes();
+
+// Disputes for a specific skill
+const skillDisputes = await client.listDisputes({
+  skillHash: '0x183c9388...',
+});`,
+    pyExample: `# All disputes
+disputes = await client.list_disputes()
+
+# Disputes for a specific skill
+skill_disputes = await client.list_disputes(
+    skill_hash="0x183c9388..."
+)`,
+  },
   // ── Write Operations ──
   {
     name: "registerSkill",
@@ -550,7 +634,7 @@ print(f"Audits: {rep.attestation_count}")`,
       { name: "auditLevel", type: "1 | 2 | 3", required: true, description: "Audit tier: L1 Basic, L2 Standard, L3 Comprehensive" },
       { name: "fee", type: "bigint", required: false, description: "Registration fee in wei (default: 0.001 ETH)" },
     ],
-    tsExample: `import { AegisClient, generateAttestationViaCLI } from '@aegis/sdk';
+    tsExample: `import { AegisClient, generateAttestationViaCLI } from '@aegisaudit/sdk';
 import { createWalletClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
 
@@ -619,6 +703,29 @@ tx_hash = await client.register_auditor(
 
 print(f"Registered: {tx_hash}")`,
   },
+  {
+    name: "addStake",
+    signature: "(auditorCommitment, amount) → Promise<Hex>",
+    description: "Add more stake to an existing auditor registration. Increases reputation and trust level.",
+    group: "Write Operations",
+    returnType: "Promise<Hex> (tx hash)",
+    params: [
+      { name: "auditorCommitment", type: "Hex (bytes32)", required: true, description: "Pedersen hash of the auditor's private key" },
+      { name: "amount", type: "bigint", required: true, description: "Additional ETH to stake in wei" },
+    ],
+    tsExample: `import { parseEther } from 'viem';
+
+const txHash = await client.addStake(
+  '0x1b90cf3b...',         // auditorCommitment
+  parseEther('0.01'),      // add 0.01 ETH
+);`,
+    pyExample: `from web3 import Web3
+
+tx_hash = await client.add_stake(
+    auditor_commitment="0x1b90cf3b...",
+    amount=Web3.to_wei(0.01, "ether"),
+)`,
+  },
   // ── Dispute Operations ──
   {
     name: "openDispute",
@@ -655,6 +762,27 @@ tx_hash = await client.open_dispute(
     bond=Web3.to_wei(0.01, "ether"),
 )`,
   },
+  {
+    name: "resolveDispute",
+    signature: "(disputeId, auditorFault) → Promise<Hex>",
+    description: "Resolve an open dispute. Contract owner only. If auditorFault is true, 50% of the auditor's stake is slashed.",
+    group: "Disputes",
+    returnType: "Promise<Hex> (tx hash)",
+    params: [
+      { name: "disputeId", type: "bigint", required: true, description: "ID of the dispute to resolve" },
+      { name: "auditorFault", type: "boolean", required: true, description: "Whether the auditor was at fault" },
+    ],
+    tsExample: `// Owner-only operation
+const txHash = await client.resolveDispute(
+  1n,      // disputeId
+  true,    // auditorFault — slash 50% of stake
+);`,
+    pyExample: `# Owner-only operation
+tx_hash = await client.resolve_dispute(
+    dispute_id=1,
+    auditor_fault=True,  # slash 50% of stake
+)`,
+  },
 ];
 
 // ── Prover Methods ───────────────────────────────────────────
@@ -671,7 +799,7 @@ const PROVER_METHODS: MethodDef[] = [
       { name: "wslDistro", type: "string", required: false, description: "WSL distribution name (default: 'Ubuntu')" },
       { name: "proverToml", type: "string", required: false, description: "Custom Prover.toml content. Uses existing if not provided." },
     ],
-    tsExample: `import { generateAttestationViaCLI, buildProverToml } from '@aegis/sdk';
+    tsExample: `import { generateAttestationViaCLI, buildProverToml } from '@aegisaudit/sdk';
 
 const result = await generateAttestationViaCLI({
   circuitsDir: './packages/circuits',
@@ -716,7 +844,7 @@ print(result.public_inputs)`,
       { name: "proofPath", type: "string", required: true, description: "Path to the proof binary file" },
       { name: "publicInputsPath", type: "string", required: true, description: "Path to the public_inputs binary file" },
     ],
-    tsExample: `import { loadProofFromFiles } from '@aegis/sdk';
+    tsExample: `import { loadProofFromFiles } from '@aegisaudit/sdk';
 
 const result = await loadProofFromFiles(
   './packages/circuits/target/proof',
@@ -746,14 +874,21 @@ const SECTIONS: SidenavSection[] = [
   { id: "method-verify", label: "verify()", indent: true },
   { id: "method-getAttestations", label: "getAttestations()", indent: true },
   { id: "method-getAuditorReputation", label: "getAuditorReputation()", indent: true },
-  { id: "submitting", label: "Submitting Attestations" },
+  { id: "discovery", label: "Discovery" },
+  { id: "method-listAllSkills", label: "listAllSkills()", indent: true },
+  { id: "method-listAllAuditors", label: "listAllAuditors()", indent: true },
+  { id: "method-getMetadataURI", label: "getMetadataURI()", indent: true },
+  { id: "method-listDisputes", label: "listDisputes()", indent: true },
+  { id: "submitting", label: "Write Operations" },
   { id: "method-registerSkill", label: "registerSkill()", indent: true },
   { id: "method-registerAuditor", label: "registerAuditor()", indent: true },
+  { id: "method-addStake", label: "addStake()", indent: true },
   { id: "zk-proving", label: "ZK Proving" },
   { id: "method-generateAttestationViaCLI", label: "generateAttestationViaCLI()", indent: true },
   { id: "method-loadProofFromFiles", label: "loadProofFromFiles()", indent: true },
   { id: "disputes", label: "Disputes" },
   { id: "method-openDispute", label: "openDispute()", indent: true },
+  { id: "method-resolveDispute", label: "resolveDispute()", indent: true },
   { id: "events", label: "Contract Events" },
   { id: "errors", label: "Error Handling" },
 ];
@@ -889,6 +1024,7 @@ export function Developers({ onBack, onRegistry, onDevelopers, onAuditors, onDoc
 
   // Group methods
   const coreQueries = METHODS.filter(m => m.group === "Core Queries");
+  const discoveryOps = METHODS.filter(m => m.group === "Discovery");
   const writeOps = METHODS.filter(m => m.group === "Write Operations");
   const disputeOps = METHODS.filter(m => m.group === "Disputes");
 
@@ -961,33 +1097,35 @@ export function Developers({ onBack, onRegistry, onDevelopers, onAuditors, onDoc
 
             <CodeWindow
               code={lang === "ts"
-                ? `import { AegisClient } from '@aegis/sdk';
+                ? `import { AegisClient } from '@aegisaudit/sdk';
 
-// Initialize client (read-only — no wallet needed)
-const client = new AegisClient({
-  chainId: 84532,             // Base Sepolia
-  registryAddress: '0x...',   // Deployed registry
-});
+// Initialize client — registry auto-resolved for Base Sepolia
+const client = new AegisClient({ chainId: 84532 });
+
+// Discover all registered skills
+const skills = await client.listAllSkills();
+console.log(skills.length, 'skills registered');
 
 // Verify a skill attestation
 const isValid = await client.verify(
-  '0x4cd3b629822958a4...', // skillHash
-  0,                        // attestation index
+  skills[0].skillHash,   // skillHash
+  0,                      // attestation index
 );
 
 console.log('Valid:', isValid); // true`
                 : `from aegis_sdk import AegisClient
 
-# Initialize client (read-only)
-client = AegisClient(
-    chain_id=84532,
-    registry_address="0x...",
-)
+# Initialize — registry auto-resolved for Base Sepolia
+client = AegisClient(chain_id=84532)
+
+# Discover all registered skills
+skills = await client.list_all_skills()
+print(f"{len(skills)} skills registered")
 
 # Verify a skill attestation
 is_valid = await client.verify(
-    "0x4cd3b629822958a4...",  # skill_hash
-    0,                         # attestation index
+    skills[0].skill_hash,   # skill_hash
+    0,                       # attestation index
 )
 
 print(f"Valid: {is_valid}")  # True`}
@@ -1020,7 +1158,7 @@ print(f"Valid: {is_valid}")  # True`}
             <CodeWindow
               code={lang === "ts"
                 ? `# Install the SDK
-npm install @aegis/sdk
+npm install @aegisaudit/sdk
 
 # Optional: Install ZK proving dependencies
 npm install @noir-lang/noir_js@1.0.0-beta.18
@@ -1052,7 +1190,7 @@ pip install aegis-sdk[proving]`}
               headers={["Option", "Type", "Default", "Description"]}
               rows={[
                 ["chainId", "number", "—", "Target chain ID (8453 = Base, 84532 = Base Sepolia)"],
-                ["registryAddress", "Address (0x...)", "—", "Deployed AegisRegistry contract address"],
+                ["registryAddress", "Address (0x...)", "Auto-resolved", "Deployed AegisRegistry address (auto-resolved for known chains)"],
                 ["rpcUrl", "string", "Public RPC", "Custom RPC URL (defaults to public Base RPC)"],
               ]}
             />
@@ -1083,6 +1221,31 @@ pip install aegis-sdk[proving]`}
             </p>
 
             {coreQueries.map(m => (
+              <div key={m.name} id={`method-${m.name}`} ref={setRef(`method-${m.name}`)}>
+                <MethodCard
+                  method={m}
+                  lang={lang}
+                  expanded={expandedMethod === m.name}
+                  onToggle={() => toggleMethod(m.name)}
+                />
+              </div>
+            ))}
+          </section>
+
+          {/* ═══ Discovery ═══ */}
+          <section id="discovery" ref={setRef("discovery")} style={{ marginTop: 56 }}>
+            <h2 style={{
+              fontFamily: FONT_HEAD, fontSize: 20, fontWeight: 700,
+              color: TEXT, marginBottom: 8,
+            }}>
+              Discovery
+            </h2>
+            <p style={{ fontFamily: FONT, fontSize: 13, color: TEXT_DIM, marginBottom: 16, lineHeight: 1.7 }}>
+              Browse registered skills, auditors, and metadata on-chain. These read-only methods scan contract events and don't require a wallet.
+              <span style={{ color: SYN_TYPE, fontSize: 11, marginLeft: 8, fontWeight: 700 }}>v0.2.0</span>
+            </p>
+
+            {discoveryOps.map(m => (
               <div key={m.name} id={`method-${m.name}`} ref={setRef(`method-${m.name}`)}>
                 <MethodCard
                   method={m}
@@ -1188,7 +1351,7 @@ pip install aegis-sdk[proving]`}
               code={lang === "ts"
                 ? `import { createPublicClient, http } from 'viem';
 import { baseSepolia } from 'viem/chains';
-import abi from '@aegis/sdk/abi/AegisRegistry.json';
+import abi from '@aegisaudit/sdk/abi/AegisRegistry.json';
 
 const client = createPublicClient({
   chain: baseSepolia,
@@ -1244,7 +1407,7 @@ for event in event_filter.get_new_entries():
 
             <CodeWindow
               code={lang === "ts"
-                ? `import { AegisClient } from '@aegis/sdk';
+                ? `import { AegisClient } from '@aegisaudit/sdk';
 import { ContractFunctionRevertedError } from 'viem';
 
 try {
