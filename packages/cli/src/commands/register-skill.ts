@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { type Hex, parseEther } from 'viem';
-import { loadProofFromFiles, REGISTRATION_FEE } from '@aegis/sdk';
+import { loadProofFromFiles, REGISTRATION_FEE } from '@aegisaudit/sdk';
 import { resolveConfig } from '../utils/config.js';
 import { getPublicClient, getWalletClient, printWalletInfo } from '../utils/wallet.js';
 import { fmtEth, truncateHex } from '../utils/format.js';

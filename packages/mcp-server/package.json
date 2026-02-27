@@ -1,0 +1,40 @@
+{
+  "name": "@aegisaudit/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for the AEGIS Protocol — exposes on-chain ZK skill attestation queries as MCP tools",
+  "type": "module",
+  "bin": {
+    "aegis-mcp-server": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": ["dist"],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "keywords": [
+    "aegis", "mcp", "model-context-protocol", "ai-agent",
+    "attestation", "zk", "base", "blockchain"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aegisaudit/aegis.git",
+    "directory": "packages/mcp-server"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aegisaudit/sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.3.0",
+    "typescript": "^5.7.0"
+  }
+}

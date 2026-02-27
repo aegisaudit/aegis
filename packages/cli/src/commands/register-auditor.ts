@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import ora from 'ora';
 import { parseEther, type Hex } from 'viem';
-import { MIN_AUDITOR_STAKE } from '@aegis/sdk';
+import { MIN_AUDITOR_STAKE } from '@aegisaudit/sdk';
 import { resolveConfig } from '../utils/config.js';
 import { getPublicClient, getWalletClient, printWalletInfo } from '../utils/wallet.js';
 import { fmtEth } from '../utils/format.js';

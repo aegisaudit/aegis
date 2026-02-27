@@ -38,6 +38,7 @@ nul
 
 # npm auth (tokens)
 packages/sdk/.npmrc
+packages/mcp-server/.npmrc
 
 # Logs
 *.log

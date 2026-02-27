@@ -1,4 +1,4 @@
-import { CHAIN_CONFIG } from '@aegis/sdk';
+import { CHAIN_CONFIG } from '@aegisaudit/sdk';
 import type { Address } from 'viem';
 
 export interface CLIConfig {
