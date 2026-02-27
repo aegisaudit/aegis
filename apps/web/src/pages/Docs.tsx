@@ -15,6 +15,7 @@ const TEXT_MUTED = "#52525B";
 
 const FONT_HEAD = "'Orbitron', sans-serif";
 const FONT = "'Space Mono', monospace";
+const FONT_CODE = "'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
 
 const GREEN = "#4ADE80";
 const PURPLE = "#A78BFA";
@@ -96,7 +97,7 @@ function CopyButton({ text }: { text: string }) {
       background: copied ? "rgba(74,222,128,0.15)" : SURFACE3,
       border: `1px solid ${copied ? "rgba(74,222,128,0.3)" : BORDER}`,
       borderRadius: 5, padding: "4px 10px", fontSize: 11,
-      fontFamily: FONT, color: copied ? GREEN : TEXT_DIM,
+      fontFamily: FONT_CODE, color: copied ? GREEN : TEXT_DIM,
       cursor: "pointer", transition: "all 0.15s ease",
     }}>{copied ? "✓ Copied" : "Copy"}</button>
   );
@@ -121,14 +122,14 @@ function CodeBlock({ code, filename, lang }: { code: string; filename?: string; 
           </div>
           {filename && (
             <span style={{
-              fontFamily: FONT, fontSize: 11, color: TEXT_DIM,
+              fontFamily: FONT_CODE, fontSize: 11, color: TEXT_DIM,
               background: SURFACE2, padding: "2px 8px", borderRadius: 4,
               border: `1px solid ${BORDER}`,
             }}>{filename}</span>
           )}
           {lang && (
             <span style={{
-              fontFamily: FONT, fontSize: 9, color: TEXT_MUTED,
+              fontFamily: FONT_CODE, fontSize: 9, color: TEXT_MUTED,
               background: SURFACE2, padding: "1px 6px", borderRadius: 3,
               textTransform: "uppercase",
             }}>{lang}</span>
@@ -136,7 +137,7 @@ function CodeBlock({ code, filename, lang }: { code: string; filename?: string; 
         </div>
         <CopyButton text={code} />
       </div>
-      <div style={{ padding: "16px 20px", fontFamily: FONT, fontSize: 12.5, lineHeight: 1.5, overflowX: "auto" }}>
+      <div style={{ padding: "16px 20px", fontFamily: FONT_CODE, fontSize: 13, lineHeight: 1.6, overflowX: "auto" }}>
         {highlight(code)}
       </div>
     </div>
@@ -354,7 +355,7 @@ export function Docs({ onBack, onRegistry, onDevelopers, onAuditors, onDocs }: {
     <code style={{
       color: SYN_FN, background: SURFACE2,
       padding: "1px 5px", borderRadius: 3, fontSize: 12,
-      fontFamily: FONT,
+      fontFamily: FONT_CODE,
     }}>{children}</code>
   );
 
@@ -962,7 +963,7 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
                 </div>
                 <div style={{ padding: "12px 16px" }}>
                   <div style={{
-                    fontFamily: FONT, fontSize: 11, color: TEXT_MUTED,
+                    fontFamily: FONT_CODE, fontSize: 11, color: TEXT_MUTED,
                     background: "#0D0D10", padding: "8px 12px", borderRadius: 6,
                     marginBottom: 12, border: `1px solid ${BORDER}`,
                   }}>

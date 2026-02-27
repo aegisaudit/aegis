@@ -16,6 +16,7 @@ const TEXT_MUTED = "#52525B";
 
 const FONT_HEAD = "'Orbitron', sans-serif";
 const FONT = "'Space Mono', monospace";
+const FONT_CODE = "'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
 
 // Syntax colors
 const SYN_KW = "#C084FC";
@@ -166,7 +167,7 @@ function CopyButton({ text }: { text: string }) {
         borderRadius: 5,
         padding: "4px 10px",
         fontSize: 11,
-        fontFamily: FONT,
+        fontFamily: FONT_CODE,
         color: copied ? "#4ADE80" : TEXT_DIM,
         cursor: "pointer",
         transition: "all 0.15s ease",
@@ -237,7 +238,7 @@ function CodeWindow({ code, lang, filename }: { code: string; lang: Lang; filena
           </div>
           {filename && (
             <span style={{
-              fontFamily: FONT, fontSize: 11, color: TEXT_DIM,
+              fontFamily: FONT_CODE, fontSize: 11, color: TEXT_DIM,
               background: SURFACE2, padding: "2px 8px", borderRadius: 4,
               border: `1px solid ${BORDER}`,
             }}>
@@ -245,7 +246,7 @@ function CodeWindow({ code, lang, filename }: { code: string; lang: Lang; filena
             </span>
           )}
           <span style={{
-            fontFamily: FONT, fontSize: 9, color: TEXT_MUTED,
+            fontFamily: FONT_CODE, fontSize: 9, color: TEXT_MUTED,
             background: SURFACE2, padding: "1px 6px", borderRadius: 3,
             textTransform: "uppercase",
           }}>
@@ -257,9 +258,9 @@ function CodeWindow({ code, lang, filename }: { code: string; lang: Lang; filena
       {/* Code */}
       <div style={{
         padding: "16px 20px",
-        fontFamily: FONT,
-        fontSize: 12.5,
-        lineHeight: 1.5,
+        fontFamily: FONT_CODE,
+        fontSize: 13,
+        lineHeight: 1.6,
         overflowX: "auto",
       }}>
         {highlight(code, lang)}

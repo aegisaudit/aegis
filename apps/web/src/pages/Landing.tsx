@@ -13,6 +13,7 @@ const TEXT_DIM = "#71717A";
 
 const FONT_HEAD = "'Orbitron', sans-serif";
 const FONT_BODY = "'Space Mono', monospace";
+const FONT_CODE = "'SF Mono', 'Cascadia Code', 'Fira Code', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
 
 // Animated geometric background
 function GeometricBG() {
@@ -53,34 +54,6 @@ function GeometricBG() {
   );
 }
 
-// Animated counter
-function Counter({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
-  const [val, setVal] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting && !started.current) {
-          started.current = true;
-          const start = Date.now();
-          const tick = () => {
-            const elapsed = Date.now() - start;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setVal(Math.floor(eased * end));
-            if (progress < 1) requestAnimationFrame(tick);
-          };
-          tick();
-        }
-      },
-      { threshold: 0.5 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, [end, duration]);
-  return <span ref={ref}>{val.toLocaleString()}{suffix}</span>;
-}
 
 function Diamond({ size = 40, color = ACCENT, delay = 0 }: { size?: number; color?: string; delay?: number }) {
   return (
@@ -154,17 +127,18 @@ function QuickStartWindow() {
       setTimeout(() => setCopied(null), 2000);
     });
   };
-  const lines: { prefix: string; cmd: string; comment: string | null }[] = [
+  const lines: { prefix: string; cmd: string; comment: string | null; spaceBefore?: boolean }[] = [
     { prefix: "$", cmd: "npm install @aegisaudit/sdk", comment: null },
-    { prefix: "", cmd: "", comment: "# Query the registry from any agent" },
+    { prefix: "", cmd: "", comment: "" },
+    { prefix: "", cmd: "", comment: "# Query the registry from any agent", spaceBefore: true },
     { prefix: ">", cmd: 'import { AegisClient } from "@aegisaudit/sdk";', comment: null },
     { prefix: ">", cmd: "const aegis = new AegisClient({ chainId: 84532 });", comment: null },
     { prefix: "", cmd: "", comment: "" },
-    { prefix: "", cmd: "", comment: "# Discover all attested skills" },
+    { prefix: "", cmd: "", comment: "# Discover all attested skills", spaceBefore: true },
     { prefix: ">", cmd: "const skills = await aegis.listAllSkills();", comment: null },
     { prefix: "", cmd: '// → [{ skillHash: "0x183c...", auditLevel: 2, ... }, ...]', comment: null },
     { prefix: "", cmd: "", comment: "" },
-    { prefix: "", cmd: "", comment: "# Check if a skill is safe before running it" },
+    { prefix: "", cmd: "", comment: "# Check if a skill is safe before running it", spaceBefore: true },
     { prefix: ">", cmd: "const atts = await aegis.getAttestations(skillHash);", comment: null },
     { prefix: ">", cmd: "const safe = atts.length > 0 && atts[0].auditLevel >= 2;", comment: null },
   ];
@@ -189,17 +163,22 @@ function QuickStartWindow() {
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#FEBC2E" }} />
             <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#28C840" }} />
           </div>
-          <span style={{ fontFamily: FONT_BODY, fontSize: 12, color: TEXT_DIM }}>
+          <span style={{ fontFamily: FONT_CODE, fontSize: 12, color: TEXT_DIM }}>
             quickstart &mdash; zsh
           </span>
           <div style={{ width: 52 }} />
         </div>
         {/* Terminal content */}
-        <div style={{ padding: "16px 20px", fontFamily: FONT_BODY, fontSize: 13, lineHeight: 1.65 }}>
+        <div style={{ padding: "20px 24px", fontFamily: FONT_CODE, fontSize: 13.5, lineHeight: 1.7 }}>
           {lines.map((line, i) => {
             if (line.comment !== null) {
               return (
-                <div key={i} style={{ color: "#4B5563", minHeight: line.comment === "" ? "0.8em" : "1.5em" }}>
+                <div key={i} style={{
+                  color: "#6B7280",
+                  minHeight: line.comment === "" ? "0.6em" : "1.5em",
+                  marginTop: line.spaceBefore ? 12 : 0,
+                  fontFamily: FONT_CODE,
+                }}>
                   {line.comment}
                 </div>
               );
@@ -257,7 +236,7 @@ function QuickStartWindow() {
                       background: copied === i ? "rgba(74,222,128,0.15)" : "rgba(42,42,48,0.9)",
                       border: `1px solid ${copied === i ? "rgba(74,222,128,0.3)" : BORDER}`,
                       borderRadius: 4, padding: "2px 8px",
-                      fontSize: 10, fontFamily: FONT_BODY,
+                      fontSize: 10, fontFamily: FONT_CODE,
                       color: copied === i ? "#4ADE80" : TEXT_DIM,
                       cursor: "pointer", opacity: 0, transition: "opacity 0.15s",
                     }}
@@ -351,40 +330,6 @@ function Hero({ onEnterApp, onExploreRegistry }: { onEnterApp?: () => void; onEx
   );
 }
 
-function StatsBar() {
-  const stats = [
-    { label: "Skills Verified", value: 12847, suffix: "" },
-    { label: "Auditors Staked", value: 342, suffix: "" },
-    { label: "Total Staked", value: 28, suffix: "M" },
-    { label: "Disputes", value: 3, suffix: "" },
-  ];
-  return (
-    <section style={{
-      display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
-      borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`,
-      position: "relative", zIndex: 1,
-    }}>
-      {stats.map((s, i) => (
-        <div key={i} style={{
-          padding: "36px 32px", textAlign: "center",
-          borderRight: i < 3 ? `1px solid ${BORDER}` : "none",
-        }}>
-          <div style={{
-            fontFamily: FONT_BODY, fontSize: 32,
-            fontWeight: 700, color: TEXT, letterSpacing: "-0.02em",
-          }}>
-            <Counter end={s.value} suffix={s.suffix} />
-          </div>
-          <div style={{
-            fontFamily: FONT_BODY, fontSize: 13,
-            color: TEXT_DIM, marginTop: 6, textTransform: "uppercase",
-            letterSpacing: "0.08em", fontWeight: 400,
-          }}>{s.label}</div>
-        </div>
-      ))}
-    </section>
-  );
-}
 
 function FeatureCard({ title, description, icon, index }: { title: string; description: string; icon: React.ReactNode; index: number }) {
   const [hovered, setHovered] = useState(false);
@@ -779,11 +724,11 @@ function CodeBlock() {
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF5F57" }} />
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FEBC2E" }} />
             <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#FF3366" }} />
-            <span style={{ marginLeft: 10, fontFamily: FONT_BODY, fontSize: 11, color: TEXT_DIM }}>agent.ts</span>
+            <span style={{ marginLeft: 10, fontFamily: FONT_CODE, fontSize: 11, color: TEXT_DIM }}>agent.ts</span>
           </div>
           <pre style={{
             padding: "20px 20px", margin: 0, overflow: "auto",
-            fontFamily: FONT_BODY, fontSize: 13, lineHeight: 1.7, color: "#A1A1AA",
+            fontFamily: FONT_CODE, fontSize: 13.5, lineHeight: 1.7, color: "#A1A1AA",
           }}>
             {code.split("\n").map((line, i) => (
               <div key={i}>
@@ -1025,7 +970,6 @@ export function Landing({ onEnterApp, onExploreRegistry, onDevelopers, onAuditor
       <GeometricBG />
       <NavBar onEnterApp={onEnterApp} onExploreRegistry={onExploreRegistry} onDevelopers={onDevelopers} onAuditors={onAuditors} onDocs={onDocs} />
       <Hero onEnterApp={onEnterApp} onExploreRegistry={onExploreRegistry} />
-      <StatsBar />
       <Features />
       <GlobeSection />
       <HowItWorks />
