@@ -1,8 +1,8 @@
 import {
   createPublicClient,
-  createWalletClient,
   http,
   getContract,
+  parseAbiItem,
   type PublicClient,
   type WalletClient,
   type GetContractReturnType,
@@ -12,8 +12,18 @@ import {
 } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
 import abi from './abi/AegisRegistry.json' with { type: 'json' };
-import type { AegisConfig, Attestation, AuditorReputation, Hex, Address } from './types';
-import { REGISTRATION_FEE } from './constants';
+import type {
+  AegisConfig,
+  Attestation,
+  AuditorReputation,
+  Hex,
+  Address,
+  SkillRegisteredEvent,
+  AuditorRegisteredEvent,
+  DisputeOpenedEvent,
+  DisputeResolvedEvent,
+} from './types';
+import { REGISTRATION_FEE, DEPLOYMENT_BLOCKS, MAX_LOG_RANGE } from './constants';
 
 const CHAINS: Record<number, Chain> = {
   8453: base,
@@ -91,6 +101,213 @@ export async function getAuditorReputation(
   return { score, totalStake, attestationCount };
 }
 
+export async function getMetadataURI(
+  client: PublicClient,
+  registryAddress: Address,
+  skillHash: Hex,
+): Promise<string> {
+  const result = await client.readContract({
+    address: registryAddress,
+    abi,
+    functionName: 'metadataURIs',
+    args: [skillHash],
+  });
+
+  return result as string;
+}
+
+// ──────────────────────────────────────────────
+//  Event Queries — Discovery & History
+// ──────────────────────────────────────────────
+
+const skillRegisteredEvent = parseAbiItem(
+  'event SkillRegistered(bytes32 indexed skillHash, uint8 auditLevel, bytes32 auditorCommitment)',
+);
+
+const auditorRegisteredEvent = parseAbiItem(
+  'event AuditorRegistered(bytes32 indexed auditorCommitment, uint256 stake)',
+);
+
+const disputeOpenedEvent = parseAbiItem(
+  'event DisputeOpened(uint256 indexed disputeId, bytes32 indexed skillHash)',
+);
+
+const disputeResolvedEvent = parseAbiItem(
+  'event DisputeResolved(uint256 indexed disputeId, bool auditorSlashed)',
+);
+
+/**
+ * Fetch logs in chunks to stay within public RPC eth_getLogs range limits.
+ * Most public RPCs (including Base) limit to ~10K blocks per request.
+ */
+async function getLogsChunked<T>(
+  client: PublicClient,
+  params: {
+    address: Address;
+    event: any;
+    args?: any;
+    fromBlock: bigint;
+    toBlock: bigint;
+  },
+  mapper: (log: any) => T,
+): Promise<T[]> {
+  const results: T[] = [];
+  let cursor = params.fromBlock;
+
+  while (cursor <= params.toBlock) {
+    const endBlock =
+      cursor + MAX_LOG_RANGE > params.toBlock
+        ? params.toBlock
+        : cursor + MAX_LOG_RANGE;
+
+    const logs = await client.getLogs({
+      address: params.address,
+      event: params.event,
+      args: params.args,
+      fromBlock: cursor,
+      toBlock: endBlock,
+    });
+
+    for (const log of logs) {
+      results.push(mapper(log));
+    }
+
+    cursor = endBlock + 1n;
+  }
+
+  return results;
+}
+
+/**
+ * Resolve the fromBlock for event queries.
+ * Defaults to the deployment block for the chain.
+ */
+function resolveFromBlock(client: PublicClient, fromBlock?: bigint): bigint {
+  if (fromBlock !== undefined) return fromBlock;
+  const chainId = client.chain?.id;
+  if (chainId && DEPLOYMENT_BLOCKS[chainId]) return DEPLOYMENT_BLOCKS[chainId];
+  return 0n;
+}
+
+/**
+ * List all registered skills by scanning SkillRegistered events.
+ * Returns skill hashes with their audit level and auditor info.
+ */
+export async function listAllSkills(
+  client: PublicClient,
+  registryAddress: Address,
+  options?: { fromBlock?: bigint; toBlock?: bigint },
+): Promise<SkillRegisteredEvent[]> {
+  const currentBlock = await client.getBlockNumber();
+  const from = resolveFromBlock(client, options?.fromBlock);
+  const to = options?.toBlock ?? currentBlock;
+
+  return getLogsChunked(
+    client,
+    {
+      address: registryAddress,
+      event: skillRegisteredEvent,
+      fromBlock: from,
+      toBlock: to,
+    },
+    (log) => ({
+      skillHash: log.args.skillHash! as Hex,
+      auditLevel: Number(log.args.auditLevel!),
+      auditorCommitment: log.args.auditorCommitment! as Hex,
+      blockNumber: log.blockNumber,
+      transactionHash: log.transactionHash as Hex,
+    }),
+  );
+}
+
+/**
+ * List all registered auditors by scanning AuditorRegistered events.
+ */
+export async function listAllAuditors(
+  client: PublicClient,
+  registryAddress: Address,
+  options?: { fromBlock?: bigint; toBlock?: bigint },
+): Promise<AuditorRegisteredEvent[]> {
+  const currentBlock = await client.getBlockNumber();
+  const from = resolveFromBlock(client, options?.fromBlock);
+  const to = options?.toBlock ?? currentBlock;
+
+  return getLogsChunked(
+    client,
+    {
+      address: registryAddress,
+      event: auditorRegisteredEvent,
+      fromBlock: from,
+      toBlock: to,
+    },
+    (log) => ({
+      auditorCommitment: log.args.auditorCommitment! as Hex,
+      stake: log.args.stake!,
+      blockNumber: log.blockNumber,
+      transactionHash: log.transactionHash as Hex,
+    }),
+  );
+}
+
+/**
+ * List all opened disputes. Optionally filter by skillHash.
+ */
+export async function listDisputes(
+  client: PublicClient,
+  registryAddress: Address,
+  options?: { skillHash?: Hex; fromBlock?: bigint; toBlock?: bigint },
+): Promise<DisputeOpenedEvent[]> {
+  const currentBlock = await client.getBlockNumber();
+  const from = resolveFromBlock(client, options?.fromBlock);
+  const to = options?.toBlock ?? currentBlock;
+
+  return getLogsChunked(
+    client,
+    {
+      address: registryAddress,
+      event: disputeOpenedEvent,
+      args: options?.skillHash ? { skillHash: options.skillHash } : undefined,
+      fromBlock: from,
+      toBlock: to,
+    },
+    (log) => ({
+      disputeId: log.args.disputeId!,
+      skillHash: log.args.skillHash! as Hex,
+      blockNumber: log.blockNumber,
+      transactionHash: log.transactionHash as Hex,
+    }),
+  );
+}
+
+/**
+ * List resolved disputes.
+ */
+export async function listResolvedDisputes(
+  client: PublicClient,
+  registryAddress: Address,
+  options?: { fromBlock?: bigint; toBlock?: bigint },
+): Promise<DisputeResolvedEvent[]> {
+  const currentBlock = await client.getBlockNumber();
+  const from = resolveFromBlock(client, options?.fromBlock);
+  const to = options?.toBlock ?? currentBlock;
+
+  return getLogsChunked(
+    client,
+    {
+      address: registryAddress,
+      event: disputeResolvedEvent,
+      fromBlock: from,
+      toBlock: to,
+    },
+    (log) => ({
+      disputeId: log.args.disputeId!,
+      auditorSlashed: log.args.auditorSlashed!,
+      blockNumber: log.blockNumber,
+      transactionHash: log.transactionHash as Hex,
+    }),
+  );
+}
+
 // ──────────────────────────────────────────────
 //  Write Operations
 // ──────────────────────────────────────────────
@@ -107,6 +324,21 @@ export async function registerAuditor(
     functionName: 'registerAuditor',
     args: [auditorCommitment],
     value: stakeAmount,
+  });
+}
+
+export async function addStake(
+  walletClient: WalletClient<Transport, Chain, Account>,
+  registryAddress: Address,
+  auditorCommitment: Hex,
+  amount: bigint,
+): Promise<Hex> {
+  return walletClient.writeContract({
+    address: registryAddress,
+    abi,
+    functionName: 'addStake',
+    args: [auditorCommitment],
+    value: amount,
   });
 }
 
@@ -153,5 +385,19 @@ export async function openDispute(
     functionName: 'openDispute',
     args: [skillHash, attestationIndex, evidence],
     value: bond,
+  });
+}
+
+export async function resolveDispute(
+  walletClient: WalletClient<Transport, Chain, Account>,
+  registryAddress: Address,
+  disputeId: bigint,
+  auditorFault: boolean,
+): Promise<Hex> {
+  return walletClient.writeContract({
+    address: registryAddress,
+    abi,
+    functionName: 'resolveDispute',
+    args: [disputeId, auditorFault],
   });
 }

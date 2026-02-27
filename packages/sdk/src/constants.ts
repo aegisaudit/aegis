@@ -25,3 +25,14 @@ export const REGISTRY_ADDRESSES: Record<number, Address> = {
 export const MIN_AUDITOR_STAKE = BigInt('10000000000000000'); // 0.01 ETH
 export const MIN_DISPUTE_BOND = BigInt('5000000000000000'); // 0.005 ETH
 export const REGISTRATION_FEE = BigInt('1000000000000000'); // 0.001 ETH
+
+/**
+ * Deployment block numbers for each chain.
+ * Event queries default to starting from these blocks.
+ */
+export const DEPLOYMENT_BLOCKS: Record<number, bigint> = {
+  84532: 38210000n, // Base Sepolia deployment (Feb 27 2026)
+};
+
+/** Max block range for eth_getLogs (public RPCs typically limit to 10K) */
+export const MAX_LOG_RANGE = 9_999n;

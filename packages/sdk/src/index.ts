@@ -9,6 +9,10 @@ export type {
   AegisConfig,
   RegisterSkillParams,
   SubmitAttestationParams,
+  SkillRegisteredEvent,
+  AuditorRegisteredEvent,
+  DisputeOpenedEvent,
+  DisputeResolvedEvent,
   Hex,
   Address,
 } from './types';
@@ -27,4 +31,11 @@ export { fetchMetadata, uploadMetadata } from './ipfs';
 export type { SkillMetadata } from './ipfs';
 
 // Constants
-export { CHAIN_CONFIG, REGISTRY_ADDRESSES, MIN_AUDITOR_STAKE, MIN_DISPUTE_BOND, REGISTRATION_FEE } from './constants';
+export {
+  CHAIN_CONFIG,
+  REGISTRY_ADDRESSES,
+  DEPLOYMENT_BLOCKS,
+  MIN_AUDITOR_STAKE,
+  MIN_DISPUTE_BOND,
+  REGISTRATION_FEE,
+} from './constants';

@@ -54,3 +54,36 @@ export interface SubmitAttestationParams {
   auditLevel: 1 | 2 | 3;
   metadataURI: string;
 }
+
+// ──────────────────────────────────────────────
+//  Event Types — for discovery & history queries
+// ──────────────────────────────────────────────
+
+export interface SkillRegisteredEvent {
+  skillHash: Hex;
+  auditLevel: number;
+  auditorCommitment: Hex;
+  blockNumber: bigint;
+  transactionHash: Hex;
+}
+
+export interface AuditorRegisteredEvent {
+  auditorCommitment: Hex;
+  stake: bigint;
+  blockNumber: bigint;
+  transactionHash: Hex;
+}
+
+export interface DisputeOpenedEvent {
+  disputeId: bigint;
+  skillHash: Hex;
+  blockNumber: bigint;
+  transactionHash: Hex;
+}
+
+export interface DisputeResolvedEvent {
+  disputeId: bigint;
+  auditorSlashed: boolean;
+  blockNumber: bigint;
+  transactionHash: Hex;
+}
