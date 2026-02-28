@@ -92,12 +92,7 @@ function NavBar({ onEnterApp, onExploreRegistry, onDevelopers, onAuditors, onDoc
       transition: "all 0.3s ease",
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 28, height: 28, border: `2px solid ${ACCENT}`, borderRadius: 4,
-          transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <div style={{ width: 8, height: 8, background: ACCENT, borderRadius: 1 }} />
-        </div>
+        <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 28, height: 28, borderRadius: 4 }} />
         <span style={{ fontFamily: FONT_HEAD, fontSize: 18, fontWeight: 700, color: TEXT, letterSpacing: "-0.02em" }}>
           AEGIS
         </span>
@@ -890,10 +885,9 @@ function Footer() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
             <div style={{
-              width: 24, height: 24, border: `2px solid ${ACCENT}`, borderRadius: 3,
-              transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
+              width: 24, height: 24, borderRadius: 3,
             }}>
-              <div style={{ width: 6, height: 6, background: ACCENT, borderRadius: 1 }} />
+              <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 24, height: 24, borderRadius: 3 }} />
             </div>
             <span style={{ fontFamily: FONT_HEAD, fontSize: 16, fontWeight: 700, color: TEXT }}>AEGIS</span>
           </div>

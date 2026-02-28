@@ -505,13 +505,7 @@ function AuditorNavBar({ onBack, onRegistry, onDevelopers, onAuditors, onDocs }:
       borderBottom: `1px solid ${BORDER}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{
-          width: 28, height: 28, border: `2px solid ${ACCENT}`, borderRadius: 4,
-          transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
-          cursor: "pointer",
-        }} onClick={onBack}>
-          <div style={{ width: 8, height: 8, background: ACCENT, borderRadius: 1 }} />
-        </div>
+        <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 28, height: 28, borderRadius: 4, cursor: "pointer" }} onClick={onBack} />
         <span style={{ fontFamily: FONT_HEAD, fontSize: 18, fontWeight: 700, color: TEXT, letterSpacing: "-0.02em", cursor: "pointer" }} onClick={onBack}>
           AEGIS
         </span>
@@ -1027,12 +1021,7 @@ export function Auditors({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
           display: "flex", justifyContent: "space-between",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{
-              width: 20, height: 20, border: `2px solid ${ACCENT}`, borderRadius: 3,
-              transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
-            }}>
-              <div style={{ width: 5, height: 5, background: ACCENT, borderRadius: 1 }} />
-            </div>
+            <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 20, height: 20, borderRadius: 3 }} />
             <span style={{ fontFamily: FONT_HEAD, fontSize: 13, fontWeight: 700, color: TEXT }}>AEGIS</span>
             <span style={{ fontFamily: FONT, fontSize: 11, color: TEXT_MUTED, marginLeft: 8 }}>
               &copy; 2026 AEGIS PROTOCOL

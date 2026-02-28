@@ -258,12 +258,7 @@ function DocsNavBar({ onBack, onRegistry, onDevelopers, onAuditors, onDocs }: {
       borderBottom: `1px solid ${BORDER}`,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }} onClick={onBack}>
-        <div style={{
-          width: 28, height: 28, border: `2px solid ${ACCENT}`, borderRadius: 4,
-          transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <div style={{ width: 8, height: 8, background: ACCENT, borderRadius: 1 }} />
-        </div>
+        <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 28, height: 28, borderRadius: 4 }} />
         <span style={{ fontFamily: FONT_HEAD, fontSize: 18, fontWeight: 700, color: TEXT, letterSpacing: "-0.02em" }}>
           AEGIS
         </span>
