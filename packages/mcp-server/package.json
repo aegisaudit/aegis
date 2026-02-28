@@ -1,6 +1,6 @@
 {
   "name": "@aegisaudit/mcp-server",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "MCP server for the AEGIS Protocol — exposes on-chain ZK skill attestation queries as MCP tools",
   "type": "module",
   "bin": {
@@ -30,6 +30,7 @@
   "dependencies": {
     "@aegisaudit/sdk": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "viem": "^2.21.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

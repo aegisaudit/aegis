@@ -942,19 +942,25 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
                 ["AEGIS_CHAIN_ID", "84532", "Target chain — 84532 (Base Sepolia) or 8453 (Base Mainnet)"],
                 ["AEGIS_RPC_URL", "Auto", "Custom RPC endpoint (defaults to public Base RPC)"],
                 ["AEGIS_REGISTRY", "Auto", "Registry contract address (auto-resolved for known chains)"],
+                ["AEGIS_PRIVATE_KEY", "—", "Wallet private key for write operations (register, stake, dispute). Optional — read tools work without it."],
               ]}
             />
+
+            <Callout color={AMBER} label="Write Operations">
+              To enable on-chain write operations, add <InlineCode>AEGIS_PRIVATE_KEY</InlineCode> to the env block in your MCP config. The wallet needs Base ETH for gas and staking. The key never leaves your machine — it stays in the local MCP server process.
+            </Callout>
           </section>
 
           <section id="mcp-tools" ref={setRef("mcp-tools")} style={{ marginTop: 32 }}>
             <SubHeading>Available Tools</SubHeading>
             <Para>
-              The MCP server exposes 9 tools. All are read-only — write operations (registering skills, staking, disputes) require a wallet and are available via the SDK directly.
+              The MCP server exposes 13 tools — 10 read-only and 3 write operations. Write tools require <InlineCode>AEGIS_PRIVATE_KEY</InlineCode> to be set. If no wallet is configured, calling a write tool returns setup instructions automatically.
             </Para>
             <InfoTable
               headers={["Tool", "Parameters", "Description"]}
               rows={[
-                ["aegis-info", "—", "Protocol overview, network config, and tool discovery"],
+                ["aegis-info", "—", "Protocol overview, wallet status, and tool discovery"],
+                ["wallet-status", "—", "Check wallet connection, address, and ETH balance"],
                 ["list-all-skills", "fromBlock?, toBlock?", "Browse all registered skills on-chain"],
                 ["list-all-auditors", "fromBlock?, toBlock?", "Browse all registered auditors"],
                 ["get-attestations", "skillHash", "Get ZK attestations for a specific skill"],
@@ -963,6 +969,9 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
                 ["get-metadata-uri", "skillHash", "Get the IPFS metadata URI for a skill"],
                 ["list-disputes", "skillHash?, fromBlock?, toBlock?", "List opened disputes, optionally filtered by skill"],
                 ["list-resolved-disputes", "fromBlock?, toBlock?", "List resolved disputes with slash results"],
+                ["register-auditor", "auditorCommitment, stakeEth", "Register as anonymous auditor by staking ETH (min 0.01)"],
+                ["add-stake", "auditorCommitment, amountEth", "Add more ETH stake to existing auditor registration"],
+                ["open-dispute", "skillHash, attestationIndex, evidence, bondEth", "Challenge a fraudulent attestation (min 0.005 ETH bond)"],
               ]}
             />
 
