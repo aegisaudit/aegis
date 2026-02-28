@@ -2,11 +2,12 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { getClient, hasWallet, getWalletAddress } from '../lib/client.js';
 import { handleToolCall, serializeResult } from '../lib/serialization.js';
+import { getWalletSetupGuide } from '../lib/wallet-guide.js';
 
 export function registerRegisterAuditor(server: McpServer): void {
   server.tool(
     'register-auditor',
-    'Register as an anonymous auditor on the AEGIS Protocol by staking ETH. Requires AEGIS_PRIVATE_KEY to be set. Minimum stake is 0.01 ETH.',
+    'Register as an anonymous auditor on the AEGIS Protocol by staking ETH. Requires AEGIS_PRIVATE_KEY to be set. Minimum stake is 0.01 ETH. If no wallet is configured, returns a step-by-step guide to help the user connect one.',
     {
       auditorCommitment: z
         .string()
@@ -19,15 +20,17 @@ export function registerRegisterAuditor(server: McpServer): void {
     (params) =>
       handleToolCall(async () => {
         if (!hasWallet()) {
+          const chainId = Number(process.env.AEGIS_CHAIN_ID ?? '84532');
           return {
             isError: true,
             content: [
               {
                 type: 'text' as const,
                 text: JSON.stringify({
-                  error: 'No wallet configured. Set AEGIS_PRIVATE_KEY in your MCP server env to enable write operations.',
-                  setup: { env: { AEGIS_PRIVATE_KEY: '0x<your-private-key>' } },
-                }),
+                  error: 'No wallet configured. This operation requires a wallet with ETH to pay for gas and staking.',
+                  action: 'Guide the user through connecting a wallet using the setup instructions below. They need to add AEGIS_PRIVATE_KEY to their MCP config and restart this client.',
+                  walletSetupGuide: getWalletSetupGuide(chainId),
+                }, null, 2),
               },
             ],
           };

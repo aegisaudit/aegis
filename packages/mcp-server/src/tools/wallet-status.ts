@@ -1,11 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getClient, hasWallet, getWalletAddress } from '../lib/client.js';
 import { handleToolCall, serializeResult } from '../lib/serialization.js';
+import { getWalletSetupGuide } from '../lib/wallet-guide.js';
 
 export function registerWalletStatus(server: McpServer): void {
   server.tool(
     'wallet-status',
-    'Check if a wallet is connected and its ETH balance on the current chain. Returns wallet address, balance, chain info, and whether write operations are available.',
+    'Check if a wallet is connected and its ETH balance on the current chain. Returns wallet address, balance, chain info, and whether write operations are available. IMPORTANT: If no wallet is connected, this tool returns a complete step-by-step walletSetupGuide — use it to walk the user through connecting their wallet.',
     {},
     () =>
       handleToolCall(async () => {
@@ -29,13 +30,8 @@ export function registerWalletStatus(server: McpServer): void {
                     connected: false,
                     network: { name: networkName, chainId },
                     writeOperationsAvailable: false,
-                    hint: 'Set AEGIS_PRIVATE_KEY in your MCP server env config to enable write operations (register-auditor, add-stake, open-dispute). You need a wallet with Base ETH.',
-                    setup: {
-                      env: {
-                        AEGIS_PRIVATE_KEY: '0x<your-private-key>',
-                        AEGIS_CHAIN_ID: String(chainId),
-                      },
-                    },
+                    action: 'Walk the user through wallet setup using the guide below. They need to add their private key to the MCP server config file and restart this client.',
+                    walletSetupGuide: getWalletSetupGuide(chainId),
                   },
                   null,
                   2,

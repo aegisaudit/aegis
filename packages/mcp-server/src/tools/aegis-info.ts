@@ -1,11 +1,12 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { REGISTRY_ADDRESSES } from '@aegisaudit/sdk';
 import { hasWallet, getWalletAddress } from '../lib/client.js';
+import { getWalletSetupGuide } from '../lib/wallet-guide.js';
 
 export function registerAegisInfo(server: McpServer): void {
   server.tool(
     'aegis-info',
-    "Get an overview of the AEGIS Protocol and this MCP server's capabilities. Returns protocol description, network configuration, wallet status, and a list of all available tools.",
+    "Get an overview of the AEGIS Protocol and this MCP server's capabilities. Returns protocol description, network configuration, wallet status, wallet setup instructions, and a list of all available tools. IMPORTANT: If the wallet is not connected, guide the user through setup using the walletSetupGuide included in the response.",
     {},
     async () => {
       const chainId = Number(process.env.AEGIS_CHAIN_ID ?? '84532');
@@ -40,7 +41,7 @@ export function registerAegisInfo(server: McpServer): void {
         { name: 'open-dispute', description: 'Challenge a fraudulent attestation with a bond (min 0.005 ETH)', params: 'skillHash, attestationIndex, evidence, bondEth' },
       ];
 
-      const info = {
+      const info: Record<string, unknown> = {
         protocol: 'AEGIS Protocol',
         description:
           'Anonymous Expertise & Guarantee for Intelligent Skills — an on-chain ZK attestation registry for AI agent skills on Base L2.',
@@ -54,7 +55,7 @@ export function registerAegisInfo(server: McpServer): void {
           address: walletAddress,
           hint: walletConnected
             ? 'Wallet connected. Read and write operations are available.'
-            : 'No wallet configured. Set AEGIS_PRIVATE_KEY in your MCP server env to enable write operations. Read operations work without a wallet.',
+            : 'No wallet configured. To use write operations (register-auditor, add-stake, open-dispute), the user needs to connect a wallet. See the walletSetupGuide below for step-by-step instructions to walk the user through this.',
         },
         readTools,
         writeTools: walletConnected
@@ -64,6 +65,12 @@ export function registerAegisInfo(server: McpServer): void {
               description: `[REQUIRES WALLET] ${t.description}`,
             })),
       };
+
+      // When no wallet is connected, include the full setup guide so the
+      // agent knows exactly how to walk the user through connecting one
+      if (!walletConnected) {
+        info.walletSetupGuide = getWalletSetupGuide(chainId);
+      }
 
       return {
         content: [{ type: 'text' as const, text: JSON.stringify(info, null, 2) }],
