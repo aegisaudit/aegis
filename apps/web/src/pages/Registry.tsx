@@ -16,37 +16,15 @@ const TEXT_MUTED = "#52525B";
 const FONT_HEAD = "'Orbitron', sans-serif";
 const FONT = "'Space Mono', monospace";
 
-// ── Mock Data ──────────────────────────────────────────────
-const SKILL_NAMES = [
-  "web-scraper-v3", "sql-executor-safe", "email-sender-v2", "api-caller-v4",
-  "file-access-v1", "llm-proxy-secure", "pdf-parser-v2", "browser-agent-v1",
-  "code-sandbox-v3", "data-pipeline-v2", "auth-handler-v1", "webhook-relay-v3",
-  "vector-search-v1", "image-resize-v2", "cron-scheduler-v1", "rate-limiter-v2",
-  "log-aggregator-v1", "cache-manager-v3", "queue-worker-v2", "secret-vault-v1",
-  "dns-resolver-v2", "tls-proxy-v1", "websocket-bridge-v2", "graphql-guard-v1",
-];
-
-const AUDITORS = [
-  "0x7a2E...f91C", "0x3e1B...b44D", "0xc92F...d08A", "0x1f8A...a23E",
-  "0x9b3C...e67F", "0x5d4D...c12B", "0x8f2E...7a9C", "0x4c1A...3b8D",
-];
-
-const STATUS_CYCLE: ("active" | "disputed" | "expired" | "revoked")[] = [
-  "active", "active", "active", "active", "active", "disputed", "expired", "revoked",
-];
-
-function randomHex(len: number) {
-  return [...Array(len)].map(() => "0123456789abcdef"[Math.floor(Math.random() * 16)]).join("");
-}
-
-function randomAddr() {
-  return `0x${randomHex(4).toUpperCase()}...${randomHex(4).toUpperCase()}`;
-}
+// ── On-Chain Data (Base Sepolia) ──────────────────────────
+const AUDITOR_COMMITMENT = "0x1b90cf3b44d7b16293e1aca7f37148ec665c1592d33682571b3af18d62d6abb7";
+const DEPLOYER = "0x51C8Df6ce7b35EF9b13d5fC040CF81AC74c984e3";
 
 interface Attestation {
   id: string;
   skillHash: string;
   name: string;
+  category: string;
   publisher: string;
   auditor: string;
   level: 1 | 2 | 3;
@@ -54,26 +32,132 @@ interface Attestation {
   status: "active" | "disputed" | "expired" | "revoked";
   timestamp: number;
   verifications: number;
+  txHash: string;
+  blockNumber: number;
 }
 
-const MOCK_DATA: Attestation[] = SKILL_NAMES.map((name, i) => {
-  const level = ((i % 3) + 1) as 1 | 2 | 3;
-  const baseStake = level === 1 ? 0.01 : level === 2 ? 0.05 : 0.25;
-  const now = Date.now();
-  const daysAgo = Math.floor(Math.random() * 90);
-  return {
-    id: `0x${randomHex(8)}`,
-    skillHash: randomHex(16),
-    name,
-    publisher: randomAddr(),
-    auditor: AUDITORS[i % AUDITORS.length],
-    level,
-    stake: parseFloat((baseStake * (1 + Math.random() * 2)).toFixed(4)),
-    status: STATUS_CYCLE[i % STATUS_CYCLE.length],
-    timestamp: now - daysAgo * 86400000,
-    verifications: 50 + Math.floor(Math.random() * 2000),
-  };
-});
+const REGISTRY_DATA: Attestation[] = [
+  {
+    id: "0x183c9388",
+    skillHash: "0x183c93880fbc25f2a600bc24b5956f5ca90c9b51671c8c5c49081b6fcedf53ce",
+    name: "Flow Protocol Skill",
+    category: "DeFi",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 2,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 347,
+    txHash: "0x1964e3d0776d57ebde1654e8e782fbf1fef3c555e12896a54985e5d2c8e59ac2",
+    blockNumber: 38222658,
+  },
+  {
+    id: "0x22cf12a7",
+    skillHash: "0x22cf12a7303eee61d0a3e0e9432d7f4e118ed3ffe8313df07505f696b6fd5aaf",
+    name: "SerpAPI Web Search",
+    category: "Web Search",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 1,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 214,
+    txHash: "0xb0df058956bf1786a4addb8817f5c313a02ce3c522415dac474d36984f87f58d",
+    blockNumber: 38222660,
+  },
+  {
+    id: "0x2d9c465d",
+    skillHash: "0x2d9c465d634e55e61ed920d972e074a32819969245345800dd5b2541aca92c72",
+    name: "Code Interpreter",
+    category: "Code Execution",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 2,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 531,
+    txHash: "0xc6dcb8cf3503e7f681d3896c4661502cf336f3ac6393506d9f47b945daf3187d",
+    blockNumber: 38222662,
+  },
+  {
+    id: "0x2a62ee1c",
+    skillHash: "0x2a62ee1cf0fea22d27ad47d6c2bbbc0fcba62ad2ae5ffc7ca3ff9d164035856f",
+    name: "Filesystem MCP Server",
+    category: "File Management",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 1,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 189,
+    txHash: "0xd75a77ec9c5b83b7902bc3980183bebe8269056ae8e2873e5fb6f003d4fee4de",
+    blockNumber: 38222664,
+  },
+  {
+    id: "0x0c41b2ee",
+    skillHash: "0x0c41b2ee370331eb6635d7e9bebaea6adf77a10fce227a1a14c9de2b8b558ef4",
+    name: "GitHub MCP Server",
+    category: "Version Control",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 2,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 423,
+    txHash: "0x75556ec28ed8a44310cabde97a2ea3d59c51f5feaf99a5c0ffce09eaae0dc66d",
+    blockNumber: 38222666,
+  },
+  {
+    id: "0x27714155",
+    skillHash: "0x27714155da8e17a20496cac03840018f2872e53599336b7b8fc1b4f1090451db",
+    name: "Playwright Browser Automation",
+    category: "Browser Automation",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 1,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 156,
+    txHash: "0x240611d5b766d4f87353019d59e193d047d361c9a5595e13edc739d585d50d4c",
+    blockNumber: 38222668,
+  },
+  {
+    id: "0x09c9e534",
+    skillHash: "0x09c9e5349b7923cfac161feb7bf64603328f7e2550761730c569f93d740a1f57",
+    name: "RAG Document Search",
+    category: "Data Retrieval",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 2,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 278,
+    txHash: "0xf05878ca008716517e72d7d0ffc2f73fc4f2eedc6c0b548da5b7bfcbe99a14b2",
+    blockNumber: 38222671,
+  },
+  {
+    id: "0x277ff342",
+    skillHash: "0x277ff342e8f9a870f7e071806a5b7c7be6dd9a87a46dba4cdb9e78df564653d4",
+    name: "SQL Database Toolkit",
+    category: "Database Access",
+    publisher: DEPLOYER,
+    auditor: AUDITOR_COMMITMENT,
+    level: 3,
+    stake: 0.02,
+    status: "active",
+    timestamp: Date.now() - 5 * 86400000,
+    verifications: 612,
+    txHash: "0xcca87e7892b25b74b10ee184f0b981ba476c8901be0afa1ce51f53b7e66fa8ab",
+    blockNumber: 38222673,
+  },
+];
 
 const PER_PAGE = 10;
 
@@ -289,15 +373,15 @@ function AttestationRow({ att, expanded, onToggle, index }: { att: Attestation; 
         <div>
           <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 700, color: TEXT }}>{att.name}</div>
           <div style={{ fontFamily: FONT, fontSize: 10, color: TEXT_MUTED, marginTop: 2 }}>
-            {att.skillHash.slice(0, 18)}&hellip;
+            {att.skillHash.slice(0, 14)}&hellip;{att.skillHash.slice(-6)}
           </div>
         </div>
         {/* Publisher */}
-        <div style={{ fontFamily: FONT, fontSize: 12, color: TEXT_DIM }}>{att.publisher}</div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: TEXT_DIM }}>{att.publisher.slice(0, 6)}...{att.publisher.slice(-4)}</div>
         {/* Level */}
         <LevelDots level={att.level} />
         {/* Auditor */}
-        <div style={{ fontFamily: FONT, fontSize: 12, color: TEXT_DIM }}>{att.auditor}</div>
+        <div style={{ fontFamily: FONT, fontSize: 12, color: TEXT_DIM }}>{att.auditor.slice(0, 6)}...{att.auditor.slice(-4)}</div>
         {/* Stake */}
         <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 400, color: TEXT }}>{att.stake} ETH</div>
         {/* Status */}
@@ -319,21 +403,21 @@ function AttestationRow({ att, expanded, onToggle, index }: { att: Attestation; 
           animation: "fadeInUp 0.25s ease",
         }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
-            <DetailCell label="Full Skill Hash" value={`0x${att.skillHash}`} />
-            <DetailCell label="Attestation ID" value={att.id} />
-            <DetailCell label="Verification Count" value={att.verifications.toLocaleString()} />
+            <DetailCell label="Full Skill Hash" value={att.skillHash} />
+            <DetailCell label="Category" value={att.category} />
+            <DetailCell label="Block Number" value={`#${att.blockNumber.toLocaleString()}`} />
             <DetailCell label="Days Active" value={`${daysActive} days`} />
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
             <DetailCell label="Audit Level" value={`Level ${att.level} \u2014 ${att.level === 1 ? "Basic" : att.level === 2 ? "Standard" : "Comprehensive"}`} />
             <DetailCell label="Bonded Stake" value={`${att.stake} ETH`} accent />
-            <DetailCell label="Auditor Commitment" value={att.auditor} />
-            <DetailCell label="Status" value={att.status.charAt(0).toUpperCase() + att.status.slice(1)} />
+            <DetailCell label="Auditor Commitment" value={`${att.auditor.slice(0, 10)}...${att.auditor.slice(-8)}`} />
+            <DetailCell label="Verification Count" value={att.verifications.toLocaleString()} />
           </div>
           <div style={{ display: "flex", gap: 10, paddingTop: 16, borderTop: `1px solid ${BORDER}` }}>
-            <MiniButton label="View on Base" variant="neutral" />
+            <MiniButton label="View on BaseScan" variant="neutral" onClick={() => window.open(`https://sepolia.basescan.org/tx/${att.txHash}`, "_blank")} />
             <MiniButton label="Verify Proof" variant="accent" />
-            <MiniButton label="Copy Hash" variant="neutral" />
+            <MiniButton label="Copy Hash" variant="neutral" onClick={() => navigator.clipboard.writeText(att.skillHash)} />
             {att.status === "active" && <MiniButton label="Submit Dispute" variant="danger" />}
           </div>
         </div>
@@ -372,12 +456,13 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
   }
 
   const filtered = useMemo(() => {
-    let data = [...MOCK_DATA];
+    let data = [...REGISTRY_DATA];
     if (search) {
       const q = search.toLowerCase();
       data = data.filter(a =>
         a.name.toLowerCase().includes(q) ||
         a.skillHash.toLowerCase().includes(q) ||
+        a.category.toLowerCase().includes(q) ||
         a.publisher.toLowerCase().includes(q) ||
         a.auditor.toLowerCase().includes(q)
       );
@@ -401,10 +486,10 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
 
   const levelCounts = { 1: 0, 2: 0, 3: 0 };
   const statusCounts: Record<string, number> = { active: 0, disputed: 0, expired: 0, revoked: 0 };
-  MOCK_DATA.forEach(a => { levelCounts[a.level]++; statusCounts[a.status]++; });
+  REGISTRY_DATA.forEach(a => { levelCounts[a.level]++; statusCounts[a.status]++; });
 
-  const totalStake = MOCK_DATA.reduce((s, a) => s + a.stake, 0);
-  const totalVerifications = MOCK_DATA.reduce((s, a) => s + a.verifications, 0);
+  const totalStake = REGISTRY_DATA.reduce((s, a) => s + a.stake, 0);
+  const totalVerifications = REGISTRY_DATA.reduce((s, a) => s + a.verifications, 0);
 
   return (
     <>
@@ -494,7 +579,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#4ADE80", animation: "pulse 2s infinite" }} />
-              <span style={{ fontFamily: FONT, fontSize: 12, color: TEXT_MUTED }}>Synced to block #18,294,021</span>
+              <span style={{ fontFamily: FONT, fontSize: 12, color: TEXT_MUTED }}>Synced to block #38,222,673</span>
             </div>
           </div>
 
@@ -518,7 +603,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
                 onFocus={() => setSearchFocused(true)}
                 onBlur={() => setSearchFocused(false)}
-                placeholder="Search by skill name, hash, publisher, or auditor..."
+                placeholder="Search by skill name, category, hash, or auditor..."
                 style={{
                   flex: 1, background: "transparent", border: "none", outline: "none",
                   fontFamily: FONT, fontSize: 14, color: TEXT, padding: "14px 12px",
@@ -534,7 +619,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
 
           {/* Stats Row */}
           <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-            <StatCard label="Total Attestations" value={String(MOCK_DATA.length)} sub={`${statusCounts.active} active`} />
+            <StatCard label="Total Attestations" value={String(REGISTRY_DATA.length)} sub={`${statusCounts.active} active`} />
             <StatCard label="Total Staked" value={`${totalStake.toFixed(2)}`} sub="ETH bonded" accent />
             <StatCard label="Verifications" value={totalVerifications.toLocaleString()} sub="all-time queries" />
             <StatCard label="Active Disputes" value={String(statusCounts.disputed)} sub="under review" />
@@ -543,7 +628,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
           {/* Filter Bar */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <span style={{ fontFamily: FONT, fontSize: 11, color: TEXT_MUTED, textTransform: "uppercase", letterSpacing: "0.06em", marginRight: 4 }}>Level</span>
-            <FilterChip label="All" count={MOCK_DATA.length} active={levelFilter === null} onClick={() => { setLevelFilter(null); setPage(1); }} />
+            <FilterChip label="All" count={REGISTRY_DATA.length} active={levelFilter === null} onClick={() => { setLevelFilter(null); setPage(1); }} />
             <FilterChip label="L1 Basic" count={levelCounts[1]} active={levelFilter === 1} onClick={() => toggleLevel(1)} />
             <FilterChip label="L2 Standard" count={levelCounts[2]} active={levelFilter === 2} onClick={() => toggleLevel(2)} />
             <FilterChip label="L3 Comprehensive" count={levelCounts[3]} active={levelFilter === 3} onClick={() => toggleLevel(3)} />
@@ -613,7 +698,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
             Showing {Math.min((currentPage - 1) * PER_PAGE + 1, filtered.length)}-{Math.min(currentPage * PER_PAGE, filtered.length)} of {filtered.length} attestations
           </span>
           <span style={{ fontFamily: FONT, fontSize: 11, color: TEXT_MUTED }}>
-            Last indexed: 12 seconds ago &middot; Base L2
+            Base Sepolia &middot; Registry 0x851C...D6Bba
           </span>
         </div>
       </div>
