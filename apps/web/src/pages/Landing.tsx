@@ -128,19 +128,19 @@ function QuickStartWindow() {
     });
   };
   const lines: { prefix: string; cmd: string; comment: string | null; spaceBefore?: boolean }[] = [
-    { prefix: "$", cmd: "npm install @aegisaudit/sdk", comment: null },
+    { prefix: "", cmd: "", comment: "# Install the MCP server for Claude, Cursor, etc.", spaceBefore: false },
+    { prefix: "$", cmd: "npx @aegisaudit/mcp-server setup", comment: null },
     { prefix: "", cmd: "", comment: "" },
-    { prefix: "", cmd: "", comment: "# Query the registry from any agent", spaceBefore: true },
+    { prefix: "", cmd: "", comment: "# ◆ AEGIS Protocol — MCP Server Setup", spaceBefore: true },
+    { prefix: "", cmd: '//   ✓ Claude Desktop — configured', comment: null },
+    { prefix: "", cmd: '//   ✓ Cursor — configured', comment: null },
+    { prefix: "", cmd: '//   Done! Restart your AI client.', comment: null },
+    { prefix: "", cmd: "", comment: "" },
+    { prefix: "", cmd: "", comment: "# Or use the SDK directly in your agent", spaceBefore: true },
+    { prefix: "$", cmd: "npm install @aegisaudit/sdk", comment: null },
     { prefix: ">", cmd: 'import { AegisClient } from "@aegisaudit/sdk";', comment: null },
     { prefix: ">", cmd: "const aegis = new AegisClient({ chainId: 84532 });", comment: null },
-    { prefix: "", cmd: "", comment: "" },
-    { prefix: "", cmd: "", comment: "# Discover all attested skills", spaceBefore: true },
     { prefix: ">", cmd: "const skills = await aegis.listAllSkills();", comment: null },
-    { prefix: "", cmd: '// → [{ skillHash: "0x183c...", auditLevel: 2, ... }, ...]', comment: null },
-    { prefix: "", cmd: "", comment: "" },
-    { prefix: "", cmd: "", comment: "# Check if a skill is safe before running it", spaceBefore: true },
-    { prefix: ">", cmd: "const atts = await aegis.getAttestations(skillHash);", comment: null },
-    { prefix: ">", cmd: "const safe = atts.length > 0 && atts[0].auditLevel >= 2;", comment: null },
   ];
   return (
     <div style={{
