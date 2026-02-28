@@ -200,6 +200,9 @@ const SECTIONS: SidenavSection[] = [
   { id: "sdk-discovery", label: "Discovery", indent: true },
   { id: "sdk-verification", label: "Verification", indent: true },
   { id: "sdk-write-ops", label: "Write Operations", indent: true },
+  { id: "mcp-server", label: "MCP Server" },
+  { id: "mcp-install", label: "Installation", indent: true },
+  { id: "mcp-tools", label: "Available Tools", indent: true },
   { id: "cli-ref", label: "CLI Reference" },
   { id: "deployment", label: "Deployment" },
 ];
@@ -883,6 +886,105 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
                 ["resolveDispute(disputeId, auditorFault)", "0", "Resolve dispute (owner only)"],
               ]}
             />
+          </section>
+
+          {/* ═══ MCP Server ═══ */}
+          <section id="mcp-server" ref={setRef("mcp-server")} style={{ marginTop: 56 }}>
+            <SectionHeading>MCP Server</SectionHeading>
+            <Para>
+              The <InlineCode>@aegisaudit/mcp-server</InlineCode> package exposes all read-only AEGIS SDK methods as <strong style={{ color: TEXT }}>Model Context Protocol (MCP)</strong> tools. Any MCP-compatible AI client — Claude Desktop, Claude Code, Cursor, Windsurf, or custom agents — can discover skills, verify ZK attestations, and query auditor reputation with zero setup.
+            </Para>
+
+            <Callout color={GREEN} label="Zero Config">
+              The MCP server auto-resolves the registry address for known chains. Point it at Base Sepolia (chain 84532) or Base Mainnet (chain 8453) and start querying immediately — no contract addresses or ABIs needed.
+            </Callout>
+          </section>
+
+          <section id="mcp-install" ref={setRef("mcp-install")} style={{ marginTop: 32 }}>
+            <SubHeading>Installation</SubHeading>
+            <Para>
+              Add the AEGIS MCP server to your AI client's configuration. The server runs locally via <InlineCode>npx</InlineCode> — no global install required.
+            </Para>
+
+            <CodeBlock code={`// Claude Desktop — edit claude_desktop_config.json
+// macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
+// Windows: %APPDATA%/Claude/claude_desktop_config.json
+
+{
+  "mcpServers": {
+    "aegis-protocol": {
+      "command": "npx",
+      "args": ["-y", "@aegisaudit/mcp-server"],
+      "env": {
+        "AEGIS_CHAIN_ID": "84532"
+      }
+    }
+  }
+}`} filename="claude_desktop_config.json" lang="json" />
+
+            <CodeBlock code={`// Claude Code — run from terminal
+claude mcp add aegis-protocol -- npx -y @aegisaudit/mcp-server
+
+// Or add to .mcp.json in your project root
+{
+  "mcpServers": {
+    "aegis-protocol": {
+      "command": "npx",
+      "args": ["-y", "@aegisaudit/mcp-server"],
+      "env": {
+        "AEGIS_CHAIN_ID": "84532"
+      }
+    }
+  }
+}`} filename=".mcp.json" lang="json" />
+
+            <CodeBlock code={`// Cursor — add to .cursor/mcp.json
+{
+  "mcpServers": {
+    "aegis-protocol": {
+      "command": "npx",
+      "args": ["-y", "@aegisaudit/mcp-server"],
+      "env": {
+        "AEGIS_CHAIN_ID": "84532"
+      }
+    }
+  }
+}`} filename=".cursor/mcp.json" lang="json" />
+
+            <SubHeading>Environment Variables</SubHeading>
+            <InfoTable
+              headers={["Variable", "Default", "Description"]}
+              rows={[
+                ["AEGIS_CHAIN_ID", "84532", "Target chain — 84532 (Base Sepolia) or 8453 (Base Mainnet)"],
+                ["AEGIS_RPC_URL", "Auto", "Custom RPC endpoint (defaults to public Base RPC)"],
+                ["AEGIS_REGISTRY", "Auto", "Registry contract address (auto-resolved for known chains)"],
+              ]}
+            />
+          </section>
+
+          <section id="mcp-tools" ref={setRef("mcp-tools")} style={{ marginTop: 32 }}>
+            <SubHeading>Available Tools</SubHeading>
+            <Para>
+              The MCP server exposes 9 tools. All are read-only — write operations (registering skills, staking, disputes) require a wallet and are available via the SDK directly.
+            </Para>
+            <InfoTable
+              headers={["Tool", "Parameters", "Description"]}
+              rows={[
+                ["aegis-info", "—", "Protocol overview, network config, and tool discovery"],
+                ["list-all-skills", "fromBlock?, toBlock?", "Browse all registered skills on-chain"],
+                ["list-all-auditors", "fromBlock?, toBlock?", "Browse all registered auditors"],
+                ["get-attestations", "skillHash", "Get ZK attestations for a specific skill"],
+                ["verify-attestation", "skillHash, attestationIndex", "Verify a ZK proof on-chain via the UltraHonk verifier"],
+                ["get-auditor-reputation", "auditorCommitment", "Query auditor reputation (score, stake, attestation count)"],
+                ["get-metadata-uri", "skillHash", "Get the IPFS metadata URI for a skill"],
+                ["list-disputes", "skillHash?, fromBlock?, toBlock?", "List opened disputes, optionally filtered by skill"],
+                ["list-resolved-disputes", "fromBlock?, toBlock?", "List resolved disputes with slash results"],
+              ]}
+            />
+
+            <Callout color={BLUE} label="Try It">
+              After adding the MCP server to your AI client, try asking: <em>"Use the AEGIS tools to list all registered skills and verify the first one"</em> — the agent will call <InlineCode>list-all-skills</InlineCode>, then <InlineCode>verify-attestation</InlineCode> automatically.
+            </Callout>
           </section>
 
           {/* ═══ CLI Reference ═══ */}
