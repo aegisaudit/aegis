@@ -903,14 +903,27 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
           <section id="mcp-install" ref={setRef("mcp-install")} style={{ marginTop: 32 }}>
             <SubHeading>Installation</SubHeading>
             <Para>
-              Add the AEGIS MCP server to your AI client's configuration. The server runs locally via <InlineCode>npx</InlineCode> — no global install required.
+              One command auto-detects Claude Desktop and Cursor on your machine and configures them:
             </Para>
 
-            <CodeBlock code={`// Claude Desktop — edit claude_desktop_config.json
-// macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
-// Windows: %APPDATA%/Claude/claude_desktop_config.json
+            <CodeBlock code={`npx @aegisaudit/mcp-server setup
 
-{
+# ◆ AEGIS Protocol — MCP Server Setup
+#   ✓ Claude Desktop — configured
+#   ✓ Cursor — configured
+#   Done! Restart your AI client to load the AEGIS tools.`} filename="terminal" lang="bash" />
+
+            <Callout color={PURPLE} label="Claude Code">
+              For Claude Code, use the built-in MCP command instead:<br/><br/>
+              <InlineCode>claude mcp add aegis-protocol -- npx -y @aegisaudit/mcp-server</InlineCode>
+            </Callout>
+
+            <SubHeading>Manual Configuration</SubHeading>
+            <Para>
+              If you prefer to configure manually, add this to your client's MCP config file:
+            </Para>
+
+            <CodeBlock code={`{
   "mcpServers": {
     "aegis-protocol": {
       "command": "npx",
@@ -920,36 +933,7 @@ if (isValid && rep.score > 0n && rep.attestationCount > 2n) {
       }
     }
   }
-}`} filename="claude_desktop_config.json" lang="json" />
-
-            <CodeBlock code={`// Claude Code — run from terminal
-claude mcp add aegis-protocol -- npx -y @aegisaudit/mcp-server
-
-// Or add to .mcp.json in your project root
-{
-  "mcpServers": {
-    "aegis-protocol": {
-      "command": "npx",
-      "args": ["-y", "@aegisaudit/mcp-server"],
-      "env": {
-        "AEGIS_CHAIN_ID": "84532"
-      }
-    }
-  }
-}`} filename=".mcp.json" lang="json" />
-
-            <CodeBlock code={`// Cursor — add to .cursor/mcp.json
-{
-  "mcpServers": {
-    "aegis-protocol": {
-      "command": "npx",
-      "args": ["-y", "@aegisaudit/mcp-server"],
-      "env": {
-        "AEGIS_CHAIN_ID": "84532"
-      }
-    }
-  }
-}`} filename=".cursor/mcp.json" lang="json" />
+}`} filename="claude_desktop_config.json / .mcp.json / .cursor/mcp.json" lang="json" />
 
             <SubHeading>Environment Variables</SubHeading>
             <InfoTable
