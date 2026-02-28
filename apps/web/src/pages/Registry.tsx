@@ -58,7 +58,7 @@ interface Attestation {
 
 const MOCK_DATA: Attestation[] = SKILL_NAMES.map((name, i) => {
   const level = ((i % 3) + 1) as 1 | 2 | 3;
-  const baseStake = level === 1 ? 1000 : level === 2 ? 5000 : 15000;
+  const baseStake = level === 1 ? 0.01 : level === 2 ? 0.05 : 0.25;
   const now = Date.now();
   const daysAgo = Math.floor(Math.random() * 90);
   return {
@@ -68,7 +68,7 @@ const MOCK_DATA: Attestation[] = SKILL_NAMES.map((name, i) => {
     publisher: randomAddr(),
     auditor: AUDITORS[i % AUDITORS.length],
     level,
-    stake: Math.round(baseStake * (1 + Math.random() * 0.5)),
+    stake: parseFloat((baseStake * (1 + Math.random() * 2)).toFixed(4)),
     status: STATUS_CYCLE[i % STATUS_CYCLE.length],
     timestamp: now - daysAgo * 86400000,
     verifications: 50 + Math.floor(Math.random() * 2000),
@@ -299,7 +299,7 @@ function AttestationRow({ att, expanded, onToggle, index }: { att: Attestation; 
         {/* Auditor */}
         <div style={{ fontFamily: FONT, fontSize: 12, color: TEXT_DIM }}>{att.auditor}</div>
         {/* Stake */}
-        <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 400, color: TEXT }}>{att.stake.toLocaleString()}</div>
+        <div style={{ fontFamily: FONT, fontSize: 12, fontWeight: 400, color: TEXT }}>{att.stake} ETH</div>
         {/* Status */}
         <StatusBadge status={att.status} />
         {/* Date */}
@@ -326,7 +326,7 @@ function AttestationRow({ att, expanded, onToggle, index }: { att: Attestation; 
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 16 }}>
             <DetailCell label="Audit Level" value={`Level ${att.level} \u2014 ${att.level === 1 ? "Basic" : att.level === 2 ? "Standard" : "Comprehensive"}`} />
-            <DetailCell label="Bonded Stake" value={`${att.stake.toLocaleString()} AEGIS`} accent />
+            <DetailCell label="Bonded Stake" value={`${att.stake} ETH`} accent />
             <DetailCell label="Auditor Commitment" value={att.auditor} />
             <DetailCell label="Status" value={att.status.charAt(0).toUpperCase() + att.status.slice(1)} />
           </div>
@@ -535,7 +535,7 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
           {/* Stats Row */}
           <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
             <StatCard label="Total Attestations" value={String(MOCK_DATA.length)} sub={`${statusCounts.active} active`} />
-            <StatCard label="Total Staked" value={`${Math.round(totalStake / 1000)}K`} sub="AEGIS tokens bonded" accent />
+            <StatCard label="Total Staked" value={`${totalStake.toFixed(2)}`} sub="ETH bonded" accent />
             <StatCard label="Verifications" value={totalVerifications.toLocaleString()} sub="all-time queries" />
             <StatCard label="Active Disputes" value={String(statusCounts.disputed)} sub="under review" />
           </div>

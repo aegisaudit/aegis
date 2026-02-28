@@ -756,7 +756,7 @@ function LiveFeed() {
   const events = [
     { type: "ATTESTED" as const, skill: "web-scraper-v3", level: 2, auditor: "0x7a2...f91", time: "12s ago" },
     { type: "VERIFIED" as const, skill: "sql-executor-safe", level: 3, auditor: "0x3e1...b44", time: "34s ago" },
-    { type: "STAKED" as const, skill: "\u2014", level: 0, auditor: "0xc92...d08", time: "1m ago", amount: "5,000 AEGIS" },
+    { type: "STAKED" as const, skill: "\u2014", level: 0, auditor: "0xc92...d08", time: "1m ago", amount: "0.25 ETH" },
     { type: "ATTESTED" as const, skill: "email-sender-v2", level: 1, auditor: "0x1f8...a23", time: "2m ago" },
     { type: "DISPUTE" as const, skill: "file-access-v1", level: 2, auditor: "0x9b3...e67", time: "5m ago" },
     { type: "ATTESTED" as const, skill: "api-caller-v4", level: 3, auditor: "0x5d4...c12", time: "8m ago" },
