@@ -518,7 +518,13 @@ export function Registry({ onBack, onRegistry, onDevelopers, onAuditors, onDocs 
         borderBottom: `1px solid ${BORDER}`,
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <img src="/aegis-logo-128.png" alt="AEGIS" style={{ width: 36, height: 36, cursor: "pointer" }} onClick={onBack} />
+          <div style={{
+            width: 28, height: 28, border: `2px solid ${ACCENT}`, borderRadius: 4,
+            transform: "rotate(45deg)", display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: "pointer",
+          }} onClick={onBack}>
+            <div style={{ width: 8, height: 8, background: ACCENT, borderRadius: 1 }} />
+          </div>
           <span style={{ fontFamily: FONT_HEAD, fontSize: 18, fontWeight: 700, color: TEXT, letterSpacing: "-0.02em", cursor: "pointer" }} onClick={onBack}>
             AEGIS
           </span>
