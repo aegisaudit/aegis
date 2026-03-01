@@ -34,6 +34,68 @@ console.log('Proof valid:', valid);
 const uri = await client.getMetadataURI(skills[0].skillHash);
 ```
 
+## How to Use AEGIS
+
+AEGIS is a **trust verification layer**, not a skill execution runtime. It answers the question: *"Has this AI agent skill been audited, and can I trust the audit?"*
+
+### What AEGIS does
+
+- Tells you if a skill has been audited (attestation exists)
+- Verifies the ZK proof on-chain (is the audit legitimate?)
+- Shows the audit level and how much ETH the auditor staked (skin in the game)
+
+### What AEGIS does NOT do
+
+- Execute or run skills
+- Host skill code or definitions
+- Provide APIs for the skills themselves
+
+### Integration Pattern
+
+If you're building an agent that wants to run a third-party skill safely:
+
+```typescript
+import { AegisClient } from '@aegisaudit/sdk';
+
+const aegis = new AegisClient({ chainId: 84532 });
+
+// 1. Look up the skill on the registry
+const skills = await aegis.listAllSkills();
+const skill = skills.find(s => s.skillHash === TARGET_SKILL_HASH);
+
+if (!skill) {
+  throw new Error('Skill not registered on AEGIS — no audit exists');
+}
+
+// 2. Check the attestation
+const attestations = await aegis.getAttestations(skill.skillHash);
+const att = attestations[0];
+
+console.log(`Audit level: ${att.auditLevel}`);      // 1, 2, or 3
+console.log(`Auditor stake: ${att.stakeAmount} wei`); // ETH at risk
+
+// 3. Verify the ZK proof on-chain
+const proofValid = await aegis.verify(skill.skillHash, 0);
+
+if (!proofValid) {
+  throw new Error('ZK proof verification failed — do not trust this audit');
+}
+
+// 4. Now you can trust the audit → go execute the skill
+//    Get the skill code from the skill publisher (not from AEGIS)
+//    e.g., fetch from the publisher's API, npm package, or IPFS
+```
+
+### Audit Levels
+
+| Level | Meaning |
+|---|---|
+| 1 | Basic — code review only |
+| 2 | Standard — code review + input validation |
+| 3 | Comprehensive — full security audit with fuzzing |
+
+Higher level = more thorough audit. The auditor's staked ETH gets slashed if the audit is disputed and found fraudulent.
+
 ## API Reference
 
 ### `new AegisClient(config)`

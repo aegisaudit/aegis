@@ -28,6 +28,36 @@ AEGIS is a protocol for verifiable AI agent skill attestation. Auditors evaluate
 3. The attestation (proof + result) is submitted on-chain to the AEGIS Registry
 4. Anyone can verify the proof on-chain or dispute a fraudulent attestation
 
+## How to Use
+
+AEGIS is a **trust verification layer** for AI agent skills — it does not execute skills. Use it to check whether a skill has been audited before you run it.
+
+```typescript
+import { AegisClient } from '@aegisaudit/sdk';
+
+const aegis = new AegisClient({ chainId: 84532 });
+
+// 1. Discover registered skills
+const skills = await aegis.listAllSkills();
+
+// 2. Check attestations for a skill
+const attestations = await aegis.getAttestations(skills[0].skillHash);
+
+// 3. Verify the ZK proof on-chain
+const trusted = await aegis.verify(skills[0].skillHash, 0);
+
+// 4. If trusted → execute the skill using the publisher's own SDK/API
+```
+
+The typical integration flow:
+
+1. **Query AEGIS** — is this skill registered? Has it been audited?
+2. **Verify the proof** — is the audit cryptographically valid?
+3. **Check the stake** — how much ETH did the auditor risk on this assessment?
+4. **Execute the skill** — get the code from the skill publisher (not from AEGIS) and run it
+
+See the [SDK README](packages/sdk#how-to-use-aegis) for a full integration guide with audit levels.
+
 ## Architecture
 
 ```
